@@ -1,0 +1,26 @@
+name: subpred
+channels:
+  - defaults
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.9
+  - numpy
+  - pandas
+  - scikit-learn
+  - imbalanced-learn
+  - black
+  - ipykernel
+  - yellowbrick
+  - joblib
+  - matplotlib
+  - flake8
+  - seaborn
+  - qnorm
+  - fastcluster
+  - cd-hit
+  - blast
+  - openpyxl
+  - nbconvert
+  - jupyter
+prefix: /home/andy/miniconda3/envs/subpred
