@@ -38,6 +38,7 @@ package:
 ## Extract raw data
 raw_data: data.tar
 	tar xvf data.tar
+	curl "https://www.uniprot.org/uniprot/?query=reviewed:yes&format=tab&columns=id,genes,protein%20names,organism,organism-id,keyword-id,keywords,go-id,go,database(TCDB),existence,sequence,fragment&sort=score" > data/raw/swissprot/sp_data.tsv
 
 #################################################################################
 # Raw data: BLAST                           		                            #
