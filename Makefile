@@ -67,6 +67,7 @@ blastdb_uniref90:
 
 .DEFAULT_GOAL := help
 
+# Copied from https://github.com/drivendata/cookiecutter-data-science
 # Inspired by <http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html>
 # sed script explained:
 # /^##/:
