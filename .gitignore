@@ -1,6 +1,6 @@
 data/intermediate/blast.tar.xz
+data/intermediate/blast/
 data/raw/swissprot/uniprot-reviewed_yes.tab.gz
-
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
