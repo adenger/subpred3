@@ -43,9 +43,9 @@ raw_data:
 # Raw data: BLAST                           		                            #
 #################################################################################
 
-## Extract pssms
+## Extract pssms from archive
 extract_pssms: 
-	mkdir data/intermediate/blast
+	mkdir -p data/intermediate/blast
 	tar xf data/intermediate/blast.tar.xz --directory=data/intermediate/blast
 	rm data/intermediate/blast.tar.xz
 
