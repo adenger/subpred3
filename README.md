@@ -8,7 +8,6 @@ Setup:
 6. Create BLAST databases: **make blast_databases**
 
 
-The scripts included here download the most recent versions of the datasets used as raw data. 
+The Makefiles included here download the most recent versions of the raw datasets. 
 For the analysis in the manuscript, we used a dataset downloaded on the 15th of November of 2021.
-
 If you want to reproduce or validate the results, we will send you a link to the data we used. 
