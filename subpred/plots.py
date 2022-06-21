@@ -5,17 +5,30 @@ from sklearn.cluster import AgglomerativeClustering
 import matplotlib.patches as mpatches
 from .cdhit import cd_hit
 
+# plot long form table returned from eval.full_test
+def plot_full_test(df_scores):
+    g = sns.barplot(data=df_scores, x="label", y="F1 score", hue="dataset")
+    g.set(ylim=(0,1))
+    return g
+
+def corr_heatmap(df_feature):
+    return sns.heatmap(
+        df_feature.corr(),
+        cmap="YlGnBu",
+        vmin=-1,
+        vmax=1,
+    )
+
 
 def clustermap(df_feature):
-    g = sns.clustermap(df_feature, method="ward", yticklabels=[], xticklabels=[],)
-    return g
+    return sns.clustermap(df_feature, method="ward", yticklabels=[], xticklabels=[],)
 
 
 def labeled_clustermap(
     df_feature,
     annotation: pd.Series,
-    xlabels = [],
-    ylabels = [], 
+    xlabels=[],
+    ylabels=[],
     colors: list = ["cyan", "magenta", "yellow", "green", "orange"],
     legend_loc: str = "upper right",
     legend_bbox: tuple = (1.05, 1.25),
