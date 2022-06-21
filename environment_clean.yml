@@ -20,4 +20,3 @@ dependencies:
   - openpyxl
   - nbconvert
   - jupyter
-prefix: /home/andy/miniconda3/envs/subpred
