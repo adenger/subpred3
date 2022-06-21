@@ -2,29 +2,49 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
+import matplotlib.patches as mpatches
 from .cdhit import cd_hit
 
 
-def labeled_clustermap(df_feature, annotation: pd.Series):
-    color_map = dict(
-        zip(
-            sorted(annotation.unique()),
-            ["cyan", "magenta", "yellow", "green", "orange"],
-        )
-    )
-    sns.clustermap(
+def clustermap(df_feature):
+    g = sns.clustermap(df_feature, method="ward", yticklabels=[], xticklabels=[],)
+    return g
+
+
+def labeled_clustermap(
+    df_feature,
+    annotation: pd.Series,
+    colors: list = ["cyan", "magenta", "yellow", "green", "orange"],
+    legend_loc: str = "upper right",
+    legend_bbox: tuple = (1.05, 1.25),
+    legend_frame: bool = True,
+    legend_fontsize: int = 10,
+):
+    assert len(df_feature.index) == len(annotation)
+
+    color_map = dict(zip(sorted(annotation.unique()), colors))
+
+    g = sns.clustermap(
         df_feature,
         method="ward",
         yticklabels=[],
         xticklabels=[],
         row_colors=annotation.map(color_map),
     )
-    return color_map
+    legend = g.ax_heatmap.legend(
+        loc=legend_loc,
+        bbox_to_anchor=legend_bbox,
+        handles=[mpatches.Patch(color=c, label=l) for l, c in color_map.items()],
+        frameon=legend_frame,
+    )
+    legend.set_title(title=annotation.name, prop={"size": legend_fontsize})
+
+    return color_map, g
 
 
-def get_clusters(df_features, n_clusters):
+def get_clusters(df_features, n_clusters=2):
 
-    cluster = AgglomerativeClustering(n_clusters=2, linkage="ward")
+    cluster = AgglomerativeClustering(n_clusters=n_clusters, linkage="ward")
 
     cluster.fit(df_features)
 
