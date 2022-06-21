@@ -47,7 +47,6 @@ dependencies:
   - gst-plugins-base=1.14.0=h8213a91_2
   - gstreamer=1.14.0=h28cd5cc_2
   - icu=58.2=he6710b0_3
-  - imbalanced-learn=0.9.0=pyhd8ed1ab_0
   - importlib-metadata=4.11.3=py39h06a4308_0
   - ipykernel=6.9.1=py39h06a4308_0
   - ipython=8.3.0=py39h06a4308_0
@@ -68,21 +67,17 @@ dependencies:
   - krb5=1.19.2=hac12032_0
   - lcms2=2.12=h3be6417_0
   - ld_impl_linux-64=2.38=h1181459_1
-  - libblas=3.9.0=15_linux64_openblas
-  - libcblas=3.9.0=15_linux64_openblas
   - libcurl=7.82.0=h0b77cf5_0
   - libedit=3.1.20210910=h7f8727e_0
   - libev=4.33=h7f8727e_1
   - libffi=3.3=he6710b0_2
   - libgcc-ng=12.1.0=h8d9b700_16
-  - libgfortran-ng=11.2.0=h00389a5_1
-  - libgfortran5=11.2.0=h1234567_1
+  - libgfortran-ng=7.5.0=ha8ba4b0_17
+  - libgfortran4=7.5.0=ha8ba4b0_17
   - libgomp=12.1.0=h8d9b700_16
   - libidn2=2.3.2=h7f8727e_0
-  - liblapack=3.9.0=15_linux64_openblas
-  - libllvm10=10.0.1=hbcb73fb_5
   - libnghttp2=1.46.0=hce63b2e_0
-  - libopenblas=0.3.20=h043d6bf_1
+  - libopenblas=0.3.18=hf726d26_0
   - libpng=1.6.37=hbc83047_0
   - libsodium=1.0.18=h7b6447c_0
   - libssh2=1.10.0=h8f2d780_0
@@ -94,8 +89,7 @@ dependencies:
   - libwebp-base=1.2.2=h7f8727e_0
   - libxcb=1.15=h7f8727e_0
   - libxml2=2.9.14=h74e7548_0
-  - libzlib=1.2.12=h166bdaf_0
-  - llvmlite=0.36.0=py39h612dafd_4
+  - libzlib=1.2.12=h166bdaf_1
   - lz4-c=1.9.3=h295c915_1
   - markupsafe=2.1.1=py39h7f8727e_0
   - matplotlib=3.5.1=py39h06a4308_1
@@ -111,7 +105,6 @@ dependencies:
   - ncurses=6.3=h7f8727e_2
   - nest-asyncio=1.5.5=py39h06a4308_0
   - notebook=6.4.11=py39h06a4308_0
-  - numba=0.53.1=py39ha9443f7_0
   - numexpr=2.8.1=py39hecfb737_0
   - numpy=1.22.3=py39h7a5d4dd_0
   - numpy-base=1.22.3=py39hb8be1f0_0
@@ -161,17 +154,15 @@ dependencies:
   - python=3.9.12=h12debd9_1
   - python-dateutil=2.8.2=pyhd3eb1b0_0
   - python-fastjsonschema=2.15.1=pyhd3eb1b0_0
-  - python_abi=3.9=2_cp39
   - pytz=2022.1=py39h06a4308_0
   - pyzmq=22.3.0=py39h295c915_2
-  - qnorm=0.8.1=pyh6c4a22f_0
   - qt=5.9.7=h5867ecd_1
   - qtconsole=5.3.0=pyhd3eb1b0_0
   - qtpy=2.0.1=pyhd3eb1b0_0
   - readline=8.1.2=h7f8727e_1
   - regex=2022.3.15=py39h7f8727e_0
   - scikit-learn=1.0.2=py39h51133e4_1
-  - scipy=1.8.1=py39he49c0e8_0
+  - scipy=1.7.3=py39h492baa0_0
   - seaborn=0.11.2=pyhd3eb1b0_0
   - send2trash=1.8.0=pyhd3eb1b0_1
   - setuptools=61.2.0=py39h06a4308_0
@@ -180,7 +171,6 @@ dependencies:
   - soupsieve=2.3.1=pyhd3eb1b0_0
   - sqlite=3.38.3=hc218d9a_0
   - stack_data=0.2.0=pyhd3eb1b0_0
-  - tbb=2020.3=hfd86e86_0
   - terminado=0.13.1=py39h06a4308_0
   - testpath=0.5.0=pyhd3eb1b0_0
   - threadpoolctl=2.2.0=pyh0d69192_0
@@ -201,6 +191,6 @@ dependencies:
   - yellowbrick=1.4=pyhd8ed1ab_0
   - zeromq=4.3.4=h2531618_0
   - zipp=3.8.0=py39h06a4308_0
-  - zlib=1.2.12=h166bdaf_0
+  - zlib=1.2.12=h166bdaf_1
   - zstd=1.5.2=ha4553b6_0
 prefix: /home/andy/miniconda3/envs/subpred

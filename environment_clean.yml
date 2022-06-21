@@ -1,25 +1,22 @@
 name: subpred
 channels:
   - defaults
-  - conda-forge
-  - bioconda
 dependencies:
   - python=3.9
   - numpy
   - pandas
   - scikit-learn
-  - imbalanced-learn
+  - scipy
   - black
   - ipykernel
-  - yellowbrick
+  - conda-forge::yellowbrick
   - joblib
   - matplotlib
   - flake8
   - seaborn
-  - qnorm
   - fastcluster
-  - cd-hit
-  - blast
+  - bioconda::cd-hit
+  - bioconda::blast
   - openpyxl
   - nbconvert
   - jupyter
