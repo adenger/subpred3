@@ -14,6 +14,8 @@ def clustermap(df_feature):
 def labeled_clustermap(
     df_feature,
     annotation: pd.Series,
+    xlabels = [],
+    ylabels = [], 
     colors: list = ["cyan", "magenta", "yellow", "green", "orange"],
     legend_loc: str = "upper right",
     legend_bbox: tuple = (1.05, 1.25),
@@ -27,8 +29,8 @@ def labeled_clustermap(
     g = sns.clustermap(
         df_feature,
         method="ward",
-        yticklabels=[],
-        xticklabels=[],
+        xticklabels=xlabels,
+        yticklabels=ylabels,
         row_colors=annotation.map(color_map),
     )
     legend = g.ax_heatmap.legend(
