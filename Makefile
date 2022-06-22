@@ -1,11 +1,11 @@
 # .PHONY: clean lint format requirements blastdb_uniref50 blastdb_uniref90 dataset expression_data
 
 #################################################################################
-# COMMANDS                                                                      #
+# Cnventions                                                                    #
 #################################################################################
 
 # "human": 		9606
-# "athaliana":	3702
+# "athaliana":		3702
 # "ecoli": 		83333
 # "yeast": 		559292
 
@@ -13,7 +13,7 @@
 # Setup                                                                         #
 #################################################################################
 
-## Install packages required on Ubuntu 20.04 LTS on WSL
+## Install packages required on Ubuntu 20.04 LTS WSL
 setup_ubuntu:
 	sudo apt install build-essential
 	wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
@@ -35,7 +35,7 @@ package:
 # Raw data                                                                      #
 #################################################################################
 
-## Extract raw data
+## Download raw data
 raw_data:
 	curl "https://www.uniprot.org/uniprot/?query=reviewed:yes&format=tab&columns=id,genes,protein%20names,organism,organism-id,keyword-id,keywords,go-id,go,database(TCDB),existence,sequence,fragment&sort=score" > data/raw/swissprot/sp_data.tsv
 
