@@ -1,4 +1,4 @@
-# .PHONY: clean lint format requirements blastdb_uniref50 blastdb_uniref90 dataset expression_data
+.PHONY: setup_ubuntu requirements package raw_data extract_pssms blast_databases blastdb_uniref50 blastdb_uniref90
 
 #################################################################################
 # Conventions                                                                   #
