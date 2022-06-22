@@ -1,7 +1,7 @@
 # .PHONY: clean lint format requirements blastdb_uniref50 blastdb_uniref90 dataset expression_data
 
 #################################################################################
-# Cnventions                                                                    #
+# Conventions                                                                   #
 #################################################################################
 
 # "human": 		9606
