@@ -1,23 +1,61 @@
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import seaborn as sns
 import pandas as pd
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
-import matplotlib.patches as mpatches
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
 from .cdhit import cd_hit
 
 # plot long form table returned from eval.full_test
 def plot_full_test(df_scores):
     g = sns.barplot(data=df_scores, x="label", y="F1 score", hue="dataset")
-    g.set(ylim=(0,1))
+    g.set(ylim=(0, 1))
     return g
 
+
 def corr_heatmap(df_feature):
-    return sns.heatmap(
-        df_feature.corr(),
-        cmap="YlGnBu",
-        vmin=-1,
-        vmax=1,
+    return sns.heatmap(df_feature.corr(), cmap="YlGnBu", vmin=-1, vmax=1,)
+
+
+def pca_plot_2d(df_feature, labels:pd.Series, figsize=(10, 6)):
+    pipe = make_pipeline(StandardScaler(), PCA(n_components=2))
+    df_pca2 = pd.DataFrame(
+        data=pipe.fit_transform(df_feature),
+        columns=["PC1", "PC2"],
+        index=df_feature.index,
     )
+    df_pca2[labels.name] = labels
+    plt.figure(figsize=figsize)
+    sns.set_style("darkgrid")
+    return sns.scatterplot(data=df_pca2, x="PC1", y="PC2", hue=labels.name)
+
+
+def pca_plot_3d(df_feature, labels, figsize=(10,10)):
+    pipe = make_pipeline(StandardScaler(), PCA(n_components=3))
+    df_pca3 = pd.DataFrame(
+        data=pipe.fit_transform(df_feature),
+        columns=["PC1", "PC2", "PC3"],
+        index=df_feature.index,
+    )
+    df_pca3[labels.name] = labels
+
+    plt.figure(figsize=figsize)
+    axes = plt.axes(projection="3d")
+    axes.set_xlabel("PC1")
+    axes.set_ylabel("PC2")
+    axes.set_zlabel("PC3")
+    for label in df_pca3[labels.name].unique():
+        axes.scatter(
+            df_pca3.PC1[df_pca3[labels.name] == label],
+            df_pca3.PC2[df_pca3[labels.name] == label],
+            df_pca3.PC3[df_pca3[labels.name] == label],
+            label=label,
+        )
+    axes.legend()
+    return axes
 
 
 def clustermap(df_feature):
