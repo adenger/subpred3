@@ -15,6 +15,7 @@
 
 ## Install packages required on Ubuntu 20.04 LTS WSL
 setup_ubuntu:
+	sudo apt update && sudo apt upgrade -y
 	sudo apt install build-essential
 	wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
 	bash ~/miniconda.sh -p ~/miniconda3
