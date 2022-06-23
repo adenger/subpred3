@@ -58,7 +58,7 @@ def labeled_clustermap(
 
 
 def get_clusters(df_features, n_clusters=2):
-
+    # seems to be deterministic
     cluster = AgglomerativeClustering(n_clusters=n_clusters, linkage="ward")
 
     cluster.fit(df_features)
