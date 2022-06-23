@@ -16,39 +16,33 @@ def plot_full_test(df_scores):
     return g
 
 
-def corr_heatmap(df_feature):
-    return sns.heatmap(df_feature.corr(), cmap="YlGnBu", vmin=-1, vmax=1,)
-
-
-def pca_plot_2d(df_feature, labels:pd.Series, figsize=(10, 6)):
-    pipe = make_pipeline(StandardScaler(), PCA(n_components=2))
-    df_pca2 = pd.DataFrame(
+def perform_pca(df_feature, labels: pd.Series, n_components: int = 2):
+    pipe = make_pipeline(StandardScaler(), PCA(n_components=n_components))
+    df_pca = pd.DataFrame(
         data=pipe.fit_transform(df_feature),
-        columns=["PC1", "PC2"],
+        columns=[f"PC{pc}" for pc in range(1, n_components + 1)],
         index=df_feature.index,
     )
-    df_pca2[labels.name] = labels
+    df_pca[labels.name] = labels
+    return df_pca
+
+
+def pca_plot_2d(df_feature, labels: pd.Series, figsize=(10, 6)):
+    df_pca2 = perform_pca(df_feature, labels, n_components=2)
     plt.figure(figsize=figsize)
     sns.set_style("darkgrid")
     return sns.scatterplot(data=df_pca2, x="PC1", y="PC2", hue=labels.name)
 
 
-def pca_plot_3d(df_feature, labels, figsize=(10,10)):
-    pipe = make_pipeline(StandardScaler(), PCA(n_components=3))
-    df_pca3 = pd.DataFrame(
-        data=pipe.fit_transform(df_feature),
-        columns=["PC1", "PC2", "PC3"],
-        index=df_feature.index,
-    )
-    df_pca3[labels.name] = labels
-
-    plt.figure(figsize=figsize)
+def pca_plot_3d(df_feature, labels, figsize=(10, 10)):
+    df_pca3 = perform_pca(df_feature, labels, n_components=3)
+    fig = plt.figure(figsize=figsize)
     axes = plt.axes(projection="3d")
     axes.set_xlabel("PC1")
     axes.set_ylabel("PC2")
     axes.set_zlabel("PC3")
     for label in df_pca3[labels.name].unique():
-        axes.scatter(
+        axes.scatter3D(
             df_pca3.PC1[df_pca3[labels.name] == label],
             df_pca3.PC2[df_pca3[labels.name] == label],
             df_pca3.PC3[df_pca3[labels.name] == label],
@@ -56,6 +50,10 @@ def pca_plot_3d(df_feature, labels, figsize=(10,10)):
         )
     axes.legend()
     return axes
+
+
+def corr_heatmap(df_feature):
+    return sns.heatmap(df_feature.corr(), cmap="YlGnBu", vmin=-1, vmax=1,)
 
 
 def clustermap(df_feature):
