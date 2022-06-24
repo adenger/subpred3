@@ -25,8 +25,7 @@ setup_ubuntu:
 ## Install packages.
 requirements:
 	conda update -n base -c defaults conda
-	conda install -n base -c conda-forge mamba
-	mamba env create --file environment.yml
+	conda env create --file environment.yml
 
 ## Install code as python package to use it in notebooks
 package:
