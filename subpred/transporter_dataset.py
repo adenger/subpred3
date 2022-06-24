@@ -8,6 +8,34 @@ from .fasta import write_fasta
 from .cdhit import cd_hit
 
 
+def get_clustering_stats(
+    df_dataset: pd.DataFrame,
+    keyword_types: list = [
+        "keywords_transport",
+        "keywords_location",
+        "keywords_transport_related",
+        "tcdb_class",
+    ],
+    identity_thresholds: list = [40, 50, 60, 70, 80, 90, 100],
+    explode: bool = True,
+):  
+    columns = ["identity_threshold", "kw_type", "keyword", "count"]
+    records = []
+    for identity_threshold in identity_thresholds:
+        cluster_representatives = cd_hit(
+            df_dataset.sequence, identity_threshold=identity_threshold, verbose=False
+        )
+        df_clustered = df_dataset.loc[cluster_representatives]
+        for keyword_type in keyword_types:
+            for kw, count in df_clustered[keyword_type].value_counts().iteritems():
+                records.append([identity_threshold, keyword_type, kw, count])
+    df_stats_long = pd.DataFrame.from_records(records, columns=columns)
+    if explode:
+        df_stats_long.keyword = df_stats_long.keyword.str.split(";")
+        df_stats_long = df_stats_long.explode("keyword")
+    return df_stats_long
+
+
 def create_dataset(
     keywords_substrate_filter: List[str],
     keywords_component_filter: List[str],
