@@ -1,4 +1,4 @@
-.PHONY: setup_ubuntu requirements package raw_data extract_pssms blast_databases blastdb_uniref50 blastdb_uniref90
+.PHONY: setup_ubuntu env_export requirements package raw_data extract_pssms blast_databases blastdb_uniref50 blastdb_uniref90
 
 #################################################################################
 # Conventions                                                                   #
@@ -30,6 +30,10 @@ requirements:
 ## Install code as python package to use it in notebooks
 package:
 	pip install -e .
+
+## Export current env to new file
+env_export:
+	conda env export | grep --invert-match "prefix: /home" > environment.yml
 
 #################################################################################
 # Raw data                                                                      #
