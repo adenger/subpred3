@@ -1,6 +1,7 @@
 import tempfile
 import subprocess
 import os
+import pandas as pd
 
 from .fasta import read_fasta, write_fasta
 
@@ -26,22 +27,17 @@ def __flatten_kwargs(**kwargs):
 
 
 def cd_hit(
-    fasta_data,
-    identity_threshold,
-    verbose=True,
-    pandas_series=True,
-    executable_location="cd-hit",
-    n_threads=4,
-    memory=4096,
+    sequences: pd.Series,
+    identity_threshold: int,
+    verbose: bool = True,
+    executable_location: str = "cd-hit",
+    n_threads: int = 4,
+    memory: int = 4096,
     **kwargs,
 ):
-    if pandas_series:
-        fasta_data = list(
-            zip(
-                [">" + ac for ac in fasta_data.index.tolist()],
-                fasta_data.values.tolist(),
-            )
-        )
+    fasta_data = list(
+        zip([">" + ac for ac in sequences.index.tolist()], sequences.values.tolist())
+    )
     tmp_fasta_in = tempfile.NamedTemporaryFile(suffix=".fasta")
     write_fasta(fasta_file_name=tmp_fasta_in.name, fasta_data=fasta_data)
 
