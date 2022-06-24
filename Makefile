@@ -33,7 +33,7 @@ package:
 
 ## Export current env to new file
 env_export:
-	conda env export | grep --invert-match "prefix: /home" > environment.yml
+	conda env export | grep --invert-match "^prefix: /home" > environment.yml
 
 #################################################################################
 # Raw data                                                                      #
