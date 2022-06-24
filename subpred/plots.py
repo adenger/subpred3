@@ -6,6 +6,7 @@ import numpy as np
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.feature_selection import f_classif, chi2
 from sklearn.pipeline import make_pipeline
 from .cdhit import cd_hit
 
@@ -14,6 +15,57 @@ def plot_full_test(df_scores):
     g = sns.barplot(data=df_scores, x="label", y="F1 score", hue="dataset")
     g.set(ylim=(0, 1))
     return g
+
+
+def get_feature_score(df_feature, labels: pd.Series, method: str = "f_classif"):
+    func = None
+    if method == "f_classif":
+        func = f_classif
+    elif method == "chi2":
+        func = chi2
+    else:
+        raise ValueError(f"Inalid method: {method}")
+
+    df_score = pd.DataFrame(
+        {
+            "Feature": df_feature.columns.tolist(),
+            "Normalized score": func(df_feature, labels)[0],
+            "Measure": [f"Feature importance ({method})"] * df_feature.shape[1],
+        }
+    )
+    df_score["Normalized score"] = df_score["Normalized score"] / sum(
+        df_score["Normalized score"]
+    )
+    return df_score
+
+
+def feature_importance_plot(
+    df_feature,
+    labels: pd.Series,
+    feature_name: str = "AA Frequency",
+    method: str = "f_classif",
+    figsize=(10, 7),
+):
+    long_dfs = []
+    for label in labels.unique():
+        df_feature_label = df_feature.loc[labels[labels == label].index.tolist()]
+        df_feature_label_long = df_feature_label.melt(
+            var_name="Feature", value_name="Normalized score"
+        ).assign(Measure=f"{feature_name} ({label})")
+        long_dfs.append(df_feature_label_long)
+
+    df_score = get_feature_score(df_feature, labels, method=method)
+    long_dfs.insert(0, df_score)
+
+    df_plot = pd.concat(long_dfs).reset_index(drop=True)
+    plt.figure(figsize=figsize)
+    return sns.barplot(
+        data=df_plot,
+        x="Feature",
+        y="Normalized score",
+        hue="Measure",
+        order=df_score.sort_values("Normalized score", ascending=False).Feature,
+    )
 
 
 def perform_pca(df_feature, labels: pd.Series, n_components: int = 2):
