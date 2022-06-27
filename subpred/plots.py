@@ -179,13 +179,74 @@ def cluster_samples_plot(sequences: pd.Series, labels: pd.Series):
     sns.lineplot(data=df_records, x="Threshold", y="Proteins", hue="Substrate")
 
 
+# TODO refactor with other function?
+def downsampling_plot(
+    df_features,
+    labels: pd.Series,
+    min_features=16,
+    random_seeds=list(range(50)),
+    figsize=(10, 7),
+):
+    """
+    Perform downsampling and evaluation, until number of samples reaches min_features.
+    """
+
+    def test_case(df_features, labels, n_samples, random_seed):
+        df_features_sampled, _, labels_sampled, _ = train_test_split(
+            df_features,
+            labels,
+            stratify=labels,
+            random_state=random_seed,
+            train_size=n_samples,
+            shuffle=True,
+        )
+        label_encoder = LabelEncoder()
+        X = df_features_sampled.to_numpy()
+        y = label_encoder.fit_transform(labels_sampled)
+
+        estimator = make_pipeline(StandardScaler(), SVC(class_weight="balanced"))
+        scorers_dict = dict()
+        labels_unique = labels.unique()
+        labels_unique_numerical = label_encoder.transform(labels_unique)
+        for label, label_numerical in zip(labels_unique, labels_unique_numerical):
+            scorers_dict[f"F1 {label}"] = make_scorer(
+                f1_score, pos_label=label_numerical
+            )
+
+        scorers_dict["F1 macro"] = make_scorer(f1_score, average="macro")
+
+        records = []
+        for scorer_name, scorer in sorted(scorers_dict.items()):
+            cv_results = cross_val_score(estimator, X, y, n_jobs=1, scoring=scorer)
+            for cv_result in cv_results:
+                records.append([scorer_name, n_samples, cv_result])
+        return records
+
+    n_samples_list = list(range(min_features, df_features.shape[0] - 1))
+    records_list = Parallel(n_jobs=-1)(
+        delayed(test_case)(df_features, labels, n_samples, random_seed)
+        for n_samples in n_samples_list
+        for random_seed in random_seeds
+    )
+    records = []
+    for sl in records_list:
+        for ssl in sl:
+            records.append(ssl)
+    results_df = pd.DataFrame.from_records(
+        records, columns=["Score name", "Total Samples", "Score"],
+    )
+    plt.figure(figsize=figsize)
+    g = sns.lineplot(data=results_df, x="Total Samples", y="Score", hue="Score name",)
+    return g
+
+
 def downsample_majority_class_plot(
     df_feature_unclustered,
     labels: pd.Series,
     min_class_sample_fractions=[x / 100 for x in range(40, 101, 5)],
     random_seeds=list(range(50)),
-    figsize=(10,7),
-    n_jobs=4
+    figsize=(10, 7),
+    n_jobs=4,
 ):
     """
     Binary classification plot.
@@ -193,6 +254,7 @@ def downsample_majority_class_plot(
     A simple evaluation is performed at every fraction, and results are saved in plot.
     The process is repeated for multiple random seeds, to rule out bias introduced by undersampling
     """
+
     def test_case(df_features, labels, min_class_sample_fraction, random_seed):
         rus = RandomUnderSampler(
             random_state=random_seed, sampling_strategy=min_class_sample_fraction
@@ -238,14 +300,8 @@ def downsample_majority_class_plot(
     labels_unique = sorted(labels.unique())
     x_lab = f"|{labels_unique[0]}|/|{labels_unique[1]}|"
     results_df = pd.DataFrame.from_records(
-        records,
-        columns=["Score name", x_lab, "Score"],
+        records, columns=["Score name", x_lab, "Score"],
     )
     plt.figure(figsize=figsize)
-    g = sns.lineplot(
-        data=results_df,
-        x=x_lab,
-        y="Score",
-        hue="Score name",
-    )
+    g = sns.lineplot(data=results_df, x=x_lab, y="Score", hue="Score name",)
     return g
