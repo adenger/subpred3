@@ -18,7 +18,8 @@ def get_clustering_stats(
     ],
     identity_thresholds: list = [40, 50, 60, 70, 80, 90, 100],
     explode: bool = True,
-):  
+    # pivot=False,
+):
     columns = ["identity_threshold", "kw_type", "keyword", "count"]
     records = []
     for identity_threshold in identity_thresholds:
@@ -32,8 +33,21 @@ def get_clustering_stats(
     df_stats_long = pd.DataFrame.from_records(records, columns=columns)
     if explode:
         df_stats_long.keyword = df_stats_long.keyword.str.split(";")
-        df_stats_long = df_stats_long.explode("keyword")
+        df_stats_long = df_stats_long.explode("keyword", ignore_index=True)
+        df_stats_long = df_stats_long.groupby(
+            ["identity_threshold", "kw_type", "keyword"], as_index=False
+        ).sum()
     return df_stats_long
+    # df_return = df_stats_long
+    # if pivot:
+    #     df_return = (
+    #         df_stats_long.pivot(
+    #             index="identity_threshold", columns="keyword", values="count"
+    #         )
+    #         .fillna(0)
+    #         .convert_dtypes(int)
+    #     )
+    # return df_return
 
 
 def create_dataset(
