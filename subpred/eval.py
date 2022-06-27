@@ -64,7 +64,7 @@ def get_independent_test_set(X, y, sample_names=None, random_state=42, test_size
 def optimize_hyperparams(
     X_train,
     y_train,
-    feature_filter=None,
+    feature_transformer=None,
     feature_names=None,
     kernel="rbf",
     C=[1, 0.1, 10],
@@ -77,7 +77,7 @@ def optimize_hyperparams(
 ):
     pipe_list = list()
     param_grid = dict()
-    if feature_filter == "pssm":
+    if feature_transformer == "pssm":
         if feature_names is None:
             raise ValueError("feature names need to be provided for PSSM filtering")
         pipe_list.append(PSSMSelector(feature_names=feature_names))
@@ -102,15 +102,16 @@ def optimize_hyperparams(
     if kernel == "rbf":
         pipe_list.append(SVC())
         param_grid.update(
-            {
-                "svc__class_weight": class_weight,
-                "svc__C": C,
-                "svc__gamma": gamma,
-                "svc__decision_function_shape": ["ovo", "ovr"]
-                if not decision_function_shape
-                else decision_function_shape,
-            }
+            {"svc__class_weight": class_weight, "svc__C": C, "svc__gamma": gamma,}
         )
+        if len(np.unique(y_train)) > 2:
+            param_grid.update(
+                {
+                    "svc__decision_function_shape": ["ovo", "ovr"]
+                    if not decision_function_shape
+                    else decision_function_shape,
+                }
+            )
     elif kernel == "linear":
         pipe_list.append(LinearSVC())
         param_grid.update(
@@ -119,11 +120,16 @@ def optimize_hyperparams(
                 "linearsvc__C": C,
                 "linearsvc__dual": [True, False],
                 "linearsvc__max_iter": [1e8],
-                "linearsvc__multi_class": ["ovr", "crammer_singer"]
-                if not decision_function_shape
-                else decision_function_shape,
             }
         )
+        if len(np.unique(y_train)) > 2:
+            param_grid.update(
+                {
+                    "linearsvc__multi_class": ["ovr", "crammer_singer"]
+                    if not decision_function_shape
+                    else decision_function_shape,
+                }
+            )
 
     pipe = make_pipeline(*pipe_list)
     gsearch = GridSearchCV(
@@ -152,6 +158,8 @@ def get_confusion_matrix(X_test, y_test, clf, labels: pd.Series = None):
         labels_unique = np.sort(labels_unique)
         df_confusion_matrix = df_confusion_matrix.set_index(labels_unique)
         df_confusion_matrix.columns = labels_unique
+        df_confusion_matrix.index = df_confusion_matrix.index.rename("observed")
+        df_confusion_matrix.columns = df_confusion_matrix.columns.rename("predicted")
     return df_confusion_matrix
 
 
