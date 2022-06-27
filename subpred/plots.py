@@ -4,10 +4,16 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
+from sklearn.svm import SVC
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.feature_selection import f_classif, chi2
 from sklearn.pipeline import make_pipeline
+from sklearn.metrics import roc_auc_score, f1_score, make_scorer
+from imblearn.under_sampling import RandomUnderSampler
+from joblib import Parallel, delayed
+
 from .cdhit import cd_hit
 
 # plot long form table returned from eval.full_test
@@ -171,3 +177,75 @@ def cluster_samples_plot(sequences: pd.Series, labels: pd.Series):
         records, columns=["Threshold", "Substrate", "Proteins"]
     )
     sns.lineplot(data=df_records, x="Threshold", y="Proteins", hue="Substrate")
+
+
+def downsample_majority_class_plot(
+    df_feature_unclustered,
+    labels: pd.Series,
+    min_class_sample_fractions=[x / 100 for x in range(40, 101, 5)],
+    random_seeds=list(range(50)),
+    figsize=(10,7),
+    n_jobs=4
+):
+    """
+    Binary classification plot.
+    Performs downsampling of majority class, until it contains less samples than minority class.
+    A simple evaluation is performed at every fraction, and results are saved in plot.
+    The process is repeated for multiple random seeds, to rule out bias introduced by undersampling
+    """
+    def test_case(df_features, labels, min_class_sample_fraction, random_seed):
+        rus = RandomUnderSampler(
+            random_state=random_seed, sampling_strategy=min_class_sample_fraction
+        )
+        df_features_sampled, labels_sampled = rus.fit_resample(df_features, labels)
+
+        label_encoder = LabelEncoder()
+        X = df_features_sampled.to_numpy()
+        y = label_encoder.fit_transform(labels_sampled)
+
+        estimator = make_pipeline(StandardScaler(), SVC(class_weight="balanced"))
+
+        labels_unique = sorted(labels.unique())
+        labels_numerical = label_encoder.transform(labels_unique)
+
+        scorers_dict = dict()
+        for label, label_numerical in zip(labels_unique, labels_numerical):
+            scorer_name = f"F1 {label}"
+            scorer = make_scorer(f1_score, pos_label=label_numerical)
+            scorers_dict[scorer_name] = scorer
+
+        scorers_dict["F1 macro"] = make_scorer(f1_score, average="macro")
+
+        records = []
+        for scorer_name, scorer in sorted(scorers_dict.items()):
+            cv_results = cross_val_score(estimator, X, y, n_jobs=1, scoring=scorer)
+            for cv_result in cv_results:
+                records.append([scorer_name, min_class_sample_fraction, cv_result])
+        return records
+
+    records_list = Parallel(n_jobs=n_jobs)(
+        delayed(test_case)(
+            df_feature_unclustered, labels, min_class_sample_fraction, random_seed
+        )
+        for min_class_sample_fraction in min_class_sample_fractions
+        for random_seed in random_seeds
+    )
+    records = []
+    for sl in records_list:
+        for ssl in sl:
+            records.append(ssl)
+
+    labels_unique = sorted(labels.unique())
+    x_lab = f"|{labels_unique[0]}|/|{labels_unique[1]}|"
+    results_df = pd.DataFrame.from_records(
+        records,
+        columns=["Score name", x_lab, "Score"],
+    )
+    plt.figure(figsize=figsize)
+    g = sns.lineplot(
+        data=results_df,
+        x=x_lab,
+        y="Score",
+        hue="Score name",
+    )
+    return g
