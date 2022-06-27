@@ -170,10 +170,10 @@ def calculate_pssms_notebook(sequences: pd.Series, n_threads: int = 4):
         for psiblast_iterations in [1, 3]:
             df_pssm = calculate_pssm_feature(
                 sequences,
-                tmp_folder="../../data/intermediate/blast/pssm_uniref{}_{}it".format(
+                tmp_folder="../data/intermediate/blast/pssm_uniref{}_{}it".format(
                     uniref_cluster_threshold, psiblast_iterations
                 ),
-                blast_db="../../data/raw/uniref/uniref{}/uniref{}.fasta".format(
+                blast_db="../data/raw/uniref/uniref{}/uniref{}.fasta".format(
                     uniref_cluster_threshold, uniref_cluster_threshold
                 ),
                 iterations=psiblast_iterations,
