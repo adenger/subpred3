@@ -1,12 +1,13 @@
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-
+import re
 
 class PSSMSelector(BaseEstimator, TransformerMixin):
     def __init__(self, feature_names, uniref_threshold="all", iterations="all"):
         self.feature_names = feature_names
         self.uniref_threshold = uniref_threshold
         self.iterations = iterations
+        self.column_regex = re.compile("[a-zA-Z][a-zA-Z]_\d\d_\d")
 
     def fit(self, X, y=None):
         if self.uniref_threshold in {50, 90}:
@@ -25,10 +26,11 @@ class PSSMSelector(BaseEstimator, TransformerMixin):
         else:
             raise ValueError(f"Incorrect iteration count: {self.iterations}")
 
-        not_pssm_feature = ~np.char.startswith(self.feature_names, "PSSM")
-        self.mask = np.bitwise_or(
-            np.bitwise_and(has_uniref, has_iterations), not_pssm_feature
+        is_pssm_feature = [bool(self.column_regex.match(col_name)) for col_name in self.feature_names]
+        self.mask = np.bitwise_and(
+            np.bitwise_and(has_uniref, has_iterations), is_pssm_feature
         )
+        # self.mask = np.bitwise_and(has_uniref, has_iterations)
         return self
 
     def transform(self, X, y=None):
