@@ -15,34 +15,13 @@ from imblearn.under_sampling import RandomUnderSampler
 from joblib import Parallel, delayed
 
 from .cdhit import cd_hit
+from .util import perform_pca, get_feature_score, get_clusters
 
 # plot long form table returned from eval.full_test
 def plot_full_test(df_scores):
     g = sns.barplot(data=df_scores, x="label", y="F1 score", hue="dataset")
     g.set(ylim=(0, 1))
     return g
-
-
-def get_feature_score(df_feature, labels: pd.Series, method: str = "f_classif"):
-    func = None
-    if method == "f_classif":
-        func = f_classif
-    elif method == "chi2":
-        func = chi2
-    else:
-        raise ValueError(f"Inalid method: {method}")
-
-    df_score = pd.DataFrame(
-        {
-            "Feature": df_feature.columns.tolist(),
-            "Normalized score": func(df_feature, labels)[0],
-            "Measure": [f"Feature importance ({method})"] * df_feature.shape[1],
-        }
-    )
-    df_score["Normalized score"] = df_score["Normalized score"] / sum(
-        df_score["Normalized score"]
-    )
-    return df_score
 
 
 def feature_importance_plot(
@@ -74,17 +53,6 @@ def feature_importance_plot(
     )
 
 
-def perform_pca(df_feature, labels: pd.Series, n_components: int = 2):
-    pipe = make_pipeline(StandardScaler(), PCA(n_components=n_components))
-    df_pca = pd.DataFrame(
-        data=pipe.fit_transform(df_feature),
-        columns=[f"PC{pc}" for pc in range(1, n_components + 1)],
-        index=df_feature.index,
-    )
-    df_pca[labels.name] = labels
-    return df_pca
-
-
 def pca_plot_2d(df_feature, labels: pd.Series, figsize=(10, 6)):
     df_pca2 = perform_pca(df_feature, labels, n_components=2)
     plt.figure(figsize=figsize)
@@ -110,9 +78,11 @@ def pca_plot_3d(df_feature, labels, figsize=(10, 10)):
     return axes
 
 
-def corr_heatmap(df_feature, figsize=(15,10)):
+def corr_heatmap(df_feature, figsize=(15, 10)):
     plt.figure(figsize=figsize)
-    return sns.heatmap(df_feature.corr(), cmap="YlGnBu", vmin=-1, vmax=1, annot=True, fmt=".2f")
+    return sns.heatmap(
+        df_feature.corr(), cmap="YlGnBu", vmin=-1, vmax=1, annot=True, fmt=".2f"
+    )
 
 
 def clustermap(df_feature):
@@ -150,19 +120,6 @@ def labeled_clustermap(
     legend.set_title(title=annotation.name, prop={"size": legend_fontsize})
 
     return color_map, g
-
-
-def get_clusters(df_features, n_clusters=2):
-    # seems to be deterministic
-    cluster = AgglomerativeClustering(n_clusters=n_clusters, linkage="ward")
-
-    cluster.fit(df_features)
-
-    cluster_list = []
-    for label in np.unique(cluster.labels_):
-        cluster_list.append(df_features.index[cluster.labels_ == label].tolist())
-
-    return cluster_list
 
 
 def cluster_samples_plot(sequences: pd.Series, labels: pd.Series):
