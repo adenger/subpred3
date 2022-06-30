@@ -71,3 +71,19 @@ def get_clusters(df_features, n_clusters=2):
         cluster_list.append(df_features.index[cluster.labels_ == label].tolist())
 
     return cluster_list
+
+def get_protein_feature_stats(df_feature, accession):
+    accession_values = df_feature.loc[accession]
+    df_feature_not_accession = df_feature.loc[df_feature.index != accession]
+    df_stats_protein = pd.concat(
+        [
+            accession_values,
+            df_feature_not_accession.mean().rename("mean_feature"),
+            df_feature_not_accession.std().rename("std_feature"),
+        ],
+        axis=1,
+    )
+    df_stats_protein = df_stats_protein.assign(
+        diff=abs(df_stats_protein[accession] - df_stats_protein.mean_feature)
+    )
+    return df_stats_protein.sort_values("diff", ascending=False)
