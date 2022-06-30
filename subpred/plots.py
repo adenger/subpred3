@@ -110,8 +110,9 @@ def pca_plot_3d(df_feature, labels, figsize=(10, 10)):
     return axes
 
 
-def corr_heatmap(df_feature):
-    return sns.heatmap(df_feature.corr(), cmap="YlGnBu", vmin=-1, vmax=1,)
+def corr_heatmap(df_feature, figsize=(15,10)):
+    plt.figure(figsize=figsize)
+    return sns.heatmap(df_feature.corr(), cmap="YlGnBu", vmin=-1, vmax=1, annot=True, fmt=".2f")
 
 
 def clustermap(df_feature):
@@ -123,7 +124,7 @@ def labeled_clustermap(
     annotation: pd.Series,
     xlabels=[],
     ylabels=[],
-    colors: list = ["cyan", "magenta", "yellow", "green", "orange"],
+    colors: list = ["cyan", "magenta", "yellow", "green", "orange", "red"],
     legend_loc: str = "upper right",
     legend_bbox: tuple = (1.05, 1.25),
     legend_frame: bool = True,
