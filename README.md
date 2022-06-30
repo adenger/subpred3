@@ -3,11 +3,26 @@ Note: Currently work in progress. The code is being migrated from an older versi
 Setup:
 
 1. Install miniconda
-2. Recreate conda environment: **make requirements**
-3. Activate conda environment: **conda activate subpred**
-4. Install code as python package: **make package**
-5. Download raw transporter data: **make raw_data**
-6. Create BLAST databases: **make blast_databases**
+2. Recreate conda environment:
+```
+conda env create --file environment.yml
+```
+3. Activate conda environment: 
+```
+conda activate subpred
+```
+4. Install code as python package: 
+```
+pip install -e .
+```
+5. Download raw transporter data: 
+```
+make raw_data
+```
+6. Create BLAST databases (Needs >100GB of space and takes several hours): 
+```
+make blast_databases
+```
 
 
 The Makefiles included here download the most recent versions of the raw datasets. 
