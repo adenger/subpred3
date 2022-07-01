@@ -39,7 +39,10 @@ def perform_pca(df_feature, labels: pd.Series, n_components: int = 2):
     return df_pca
 
 
-def get_feature_score(df_feature, labels: pd.Series, method: str = "f_classif"):
+def get_feature_score(df_feature, labels: pd.Series, method: str = "f_classif", remove_zero_variance:bool = False):
+    if remove_zero_variance:
+        # does not overwrite original dataframe
+        df_feature = df_feature.loc[:,(df_feature.var() != 0)]
     func = None
     if method == "f_classif":
         func = f_classif
