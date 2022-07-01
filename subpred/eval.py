@@ -1,5 +1,5 @@
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import SelectKBest, VarianceThreshold
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -70,10 +70,12 @@ def optimize_hyperparams(
     C=[1, 0.1, 10],
     gamma=["scale", 0.01, 0.1, 1],
     class_weight=["balanced", None],
-    select_k_steps=1,
     dim_reduction=None,
     decision_function_shape=None,
     verbose=True,
+    remove_zero_var=False,
+    select_k_steps=1,
+    max_k_to_select: int = None,
 ):
     pipe_list = list()
     param_grid = dict()
@@ -87,6 +89,8 @@ def optimize_hyperparams(
                 "pssmselector__iterations": [1, 3, "all"],
             }
         )
+    if remove_zero_var:
+        pipe_list.append(VarianceThreshold(threshold=0))
     pipe_list.append(StandardScaler())
 
     if dim_reduction == "pca":
@@ -96,7 +100,13 @@ def optimize_hyperparams(
     elif dim_reduction == "kbest":
         pipe_list.append(SelectKBest())
         param_grid.update(
-            {"selectkbest__k": range(1, X_train.shape[1], select_k_steps)}
+            {
+                "selectkbest__k": range(
+                    1,
+                    max_k_to_select if max_k_to_select else X_train.shape[1],
+                    select_k_steps,
+                )
+            }
         )
         pipe_list.append(StandardScaler())
     if kernel == "rbf":
