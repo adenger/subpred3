@@ -1,4 +1,4 @@
-Note: Currently work in progress. The code is being migrated from an older version of the subpred package. The old, unpolished versions of the notebooks can be found in the folder *notebooks_old*, until they are replaced with the new versions in *notebooks*
+Note: Currently work in progress. The code is being migrated from an older version of the subpred package. The old, unpolished versions of the notebooks and the code can be found on the branch *subpred2*. 
 
 Setup:
 
