@@ -1,4 +1,4 @@
-Note: Currently work in progress. The code is being migrated from an older version of the subpred package. The old versions of the code and the notebooks, which were used to calculate the results included in the manuscript, can be found on the branch *subpred2*. These old notebooks are also located in the folder *notebooks_old* on the *main* branch.
+Note: The code is being migrated from an older version of the subpred package. The old versions of the code and the notebooks, which were used to calculate the results included in the manuscript, can be found on the branch *subpred2*. These old notebooks are also located in the folder *notebooks_old* on the *main* branch.
 
 The Makefiles included here download the most recent versions of the raw datasets. 
 For the analysis in the manuscript, we used a dataset downloaded on the 15th of November of 2021.
