@@ -1,4 +1,4 @@
-Note: Currently work in progress. The code is being migrated from an older version of the subpred package. The old versions of the code and the notebooks which were used for the manuscript can be found on the branch *subpred2*. 
+Note: Currently work in progress. The code is being migrated from an older version of the subpred package. The old versions of the code and the notebooks, which were used for the manuscript, can be found on the branch *subpred2*. 
 
 Setup:
 
