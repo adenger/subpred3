@@ -1,0 +1,6 @@
+	0	1	2	3	4	5	6	7	8	9
+pca__n_components	0.99	0.99	0.99	0.99	0.99	0.8	0.99	0.99	0.99	0.99
+svc__C	10	1	1	10	10	10	10	10	1	1
+svc__class_weight	balanced	balanced	balanced	balanced	balanced	balanced	balanced	balanced	balanced	balanced
+svc__decision_function_shape	ovo	ovo	ovo	ovo	ovo	ovo	ovo	ovo	ovo	ovo
+svc__gamma	scale	scale	scale	scale	scale	scale	scale	scale	scale	scale

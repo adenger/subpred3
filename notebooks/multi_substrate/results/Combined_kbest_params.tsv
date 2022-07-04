@@ -1,0 +1,8 @@
+	0	1	2	3	4	5	6	7	8	9
+pssmselector__iterations	1	1	1	1	1	1	1	1	1	1
+pssmselector__uniref_threshold	50	50	50	50	50	50	50	50	50	50
+selectkbest__k	1291	1291	251	1581	811	681	1481	351	1371	1421
+svc__C	10	10	10	10	10	10	10	10	10	10
+svc__class_weight	balanced	balanced	balanced	balanced	balanced	balanced	balanced	balanced	balanced	balanced
+svc__decision_function_shape	ovo	ovo	ovo	ovo	ovo	ovo	ovo	ovo	ovo	ovo
+svc__gamma	scale	scale	scale	scale	scale	scale	scale	scale	scale	scale

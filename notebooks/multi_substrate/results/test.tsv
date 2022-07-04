@@ -1,0 +1,16 @@
+		score	score	score	score	score	score	score	score
+substrate		Amino-acid	Amino-acid	Electron	Electron	Potassium	Potassium	Sugar	Sugar
+dataset		test	train	test	train	test	train	test	train
+feature	feature_selection								
+AAC	None	0.697	0.794	0.89	0.893	0.959	0.964	0.863	0.887
+AAC	kbest	0.675	0.815	0.862	0.892	0.955	0.965	0.875	0.896
+AAC	pca	0.673	0.77	0.891	0.875	0.959	0.945	0.844	0.863
+Combined	None	0.936	0.91	0.987	0.979	0.995	0.982	0.977	0.959
+Combined	kbest	0.944	0.933	0.987	0.98	0.995	0.983	0.98	0.965
+Combined	pca	0.941	0.96	0.98	0.975	0.995	0.986	0.963	0.974
+PAAC	None	0.701	0.75	0.892	0.867	0.951	0.918	0.883	0.885
+PAAC	kbest	0.734	0.805	0.884	0.886	0.955	0.925	0.884	0.904
+PAAC	pca	0.647	0.641	0.542	0.586	0.852	0.784	0.79	0.77
+PSSM	None	0.936	0.91	0.987	0.979	0.995	0.982	0.977	0.959
+PSSM	kbest	0.944	0.933	0.987	0.98	0.995	0.983	0.98	0.965
+PSSM	pca	0.941	0.96	0.98	0.975	0.995	0.986	0.963	0.974

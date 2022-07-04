@@ -1,0 +1,8 @@
+	F1 score	F1 score
+dataset	test	train
+label		
+Amino-acid	0.697	0.794
+Electron	0.89	0.893
+Potassium	0.959	0.964
+Sugar	0.863	0.887
+mean	0.852	0.885

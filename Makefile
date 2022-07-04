@@ -1,11 +1,20 @@
-.PHONY: setup_ubuntu env_export requirements package raw_data extract_pssms blast_databases blastdb_uniref50 blastdb_uniref90
+# .PHONY: clean lint format requirements blastdb_uniref50 blastdb_uniref90 dataset expression_data
 
 #################################################################################
-# Conventions                                                                   #
+# CONVENTIONS                                                                   #
+#################################################################################
+
+# SUBSTRATES = "Amino-acid transport;Sugar transport"
+# DATASETNAME = "swissprot_transporters"
+# TODO organism, other keywords, parameters etc.
+# Or: JSON file with parameters?
+
+#################################################################################
+# COMMANDS                                                                      #
 #################################################################################
 
 # "human": 		9606
-# "athaliana":		3702
+# "athaliana":	3702
 # "ecoli": 		83333
 # "yeast": 		559292
 
@@ -13,9 +22,8 @@
 # Setup                                                                         #
 #################################################################################
 
-## Install packages required on Ubuntu 20.04 LTS WSL
+## Install packages required on Ubuntu 20.04 LTS on WSL
 setup_ubuntu:
-	sudo apt update && sudo apt upgrade -y
 	sudo apt install build-essential
 	wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
 	bash ~/miniconda.sh -p ~/miniconda3
@@ -25,36 +33,40 @@ setup_ubuntu:
 ## Install packages.
 requirements:
 	conda update -n base -c defaults conda
-	conda env create --file environment.yml
+	conda install -n base -c conda-forge mamba
+	mamba env create --file environment.yml
+	
+# conda install numpy pandas scikit-learn imbalanced-learn xgboost matplotlib seaborn yellowbrick black flake8 ipykernel joblib scikit-learn-intelex qnorm fastcluster
 
-## Install code as python package to use it in notebooks
-package:
-	pip install -e .
-
-## Export current env to new file
-env_export:
-	conda env export | grep --invert-match "^prefix: /home" > environment.yml
 
 #################################################################################
 # Raw data                                                                      #
 #################################################################################
 
-## Download raw data
-raw_data:
-	curl "https://www.uniprot.org/uniprot/?query=reviewed:yes&format=tab&columns=id,genes,protein%20names,organism,organism-id,keyword-id,keywords,go-id,go,database(TCDB),existence,sequence,fragment&sort=score" > data/raw/swissprot/sp_data.tsv
+# Download raw data from onedrive
+download_data:
+	cp /mnt/c/Users/adeng/OneDrive/PhD/Manuskript1/Data/subpred_data.tar .
 
-#################################################################################
-# Raw data: BLAST                           		                            #
-#################################################################################
-
-## Extract pssms from archive
-extract_pssms: 
-	mkdir -p data/intermediate/blast
+## Extract raw data
+raw_data: subpred_data.tar
+	tar xvf subpred_data.tar
+	mkdir data/intermediate/blast
 	tar xf data/intermediate/blast.tar.xz --directory=data/intermediate/blast
+	rm subpred_data.tar
 	rm data/intermediate/blast.tar.xz
 
-## Init blast dbs for creating additional PSSMs. >100GB needed
-blast_databases: blastdb_uniref50 blastdb_uniref90
+#################################################################################
+# Raw data: BLAST databases                                                     #
+#################################################################################
+
+# cp /mnt/c/Users/adeng/OneDrive/subpred_data/subpred_data_uniref.tar .
+
+## Download and init blast dbs for recalculating PSSM feature. >100GB needed
+blast_databases: blastdb_extract blastdb_uniref50 blastdb_uniref90
+
+blastdb_extract: subpred_data_uniref.tar
+	tar xvf subpred_data_uniref.tar
+	rm subpred_data_uniref.tar
 
 blastdb_uniref50: 
 	@echo Creating BLASTDB...
@@ -64,6 +76,47 @@ blastdb_uniref90:
 	@echo Creating BLASTDB...
 	$(MAKE) -C data/raw/uniref/uniref90 uniref90.fasta.pdb
 
+#################################################################################
+# Preprocessing                                                                 #
+#################################################################################
+
+## Preprocess raw data (data/intermediate)
+preprocessing: preprocessing_expression_data preprocessing_go_data preprocessing_gene_positions
+
+preprocessing_expression_data:
+	# python3 src/preprocessing/athaliana_exp.py --aggregate -e data/raw/gene_expression/athaliana/E-TABM-17-processed-data-1343490029.txt.gz -g data/raw/gene_expression/athaliana/GPL198.annot.gz -m data/raw/uniprot_swissprot/ARATH_3702_idmapping.dat.gz -a data/raw/gene_expression/athaliana/E-TABM-17.sdrf.txt -o data/intermediate/gene_expression/athaliana/e_tabm_17.tsv
+	python3 src/preprocessing/athaliana_exp.py --aggregate -e data/raw/gene_expression/athaliana/E-TABM-17-processed-data-1343490029.txt.gz -g data/raw/gene_expression/athaliana/GPL198.annot.gz -m data/raw/uniprot_swissprot/ARATH_3702_idmapping.dat.gz -a data/raw/gene_expression/athaliana/E-TABM-17.sdrf.txt --ecotype Columbia-0 -o data/intermediate/gene_expression/athaliana/athaliana_columbia.tsv
+	python3 src/preprocessing/athaliana_exp.py --aggregate -e data/raw/gene_expression/athaliana/E-TABM-17-processed-data-1343490029.txt.gz -g data/raw/gene_expression/athaliana/GPL198.annot.gz -m data/raw/uniprot_swissprot/ARATH_3702_idmapping.dat.gz -a data/raw/gene_expression/athaliana/E-TABM-17.sdrf.txt --ecotype Columbia-0 --organism-parts flower -o data/intermediate/gene_expression/athaliana/athaliana_columbia_flower.tsv
+	python3 src/preprocessing/athaliana_exp.py --aggregate -e data/raw/gene_expression/athaliana/E-TABM-17-processed-data-1343490029.txt.gz -g data/raw/gene_expression/athaliana/GPL198.annot.gz -m data/raw/uniprot_swissprot/ARATH_3702_idmapping.dat.gz -a data/raw/gene_expression/athaliana/E-TABM-17.sdrf.txt --ecotype Columbia-0 --organism-parts root -o data/intermediate/gene_expression/athaliana/athaliana_columbia_root.tsv
+	python3 src/preprocessing/athaliana_exp.py --aggregate -e data/raw/gene_expression/athaliana/E-TABM-17-processed-data-1343490029.txt.gz -g data/raw/gene_expression/athaliana/GPL198.annot.gz -m data/raw/uniprot_swissprot/ARATH_3702_idmapping.dat.gz -a data/raw/gene_expression/athaliana/E-TABM-17.sdrf.txt --ecotype Columbia-0 --organism-parts seed -o data/intermediate/gene_expression/athaliana/athaliana_columbia_seed.tsv
+	python3 src/preprocessing/athaliana_exp.py --aggregate -e data/raw/gene_expression/athaliana/E-TABM-17-processed-data-1343490029.txt.gz -g data/raw/gene_expression/athaliana/GPL198.annot.gz -m data/raw/uniprot_swissprot/ARATH_3702_idmapping.dat.gz -a data/raw/gene_expression/athaliana/E-TABM-17.sdrf.txt --ecotype Columbia-0 --organism-parts "rosette leaf" -o data/intermediate/gene_expression/athaliana/athaliana_columbia_rosette_leaf.tsv
+	python3 src/preprocessing/athaliana_exp.py --aggregate -e data/raw/gene_expression/athaliana/E-TABM-17-processed-data-1343490029.txt.gz -g data/raw/gene_expression/athaliana/GPL198.annot.gz -m data/raw/uniprot_swissprot/ARATH_3702_idmapping.dat.gz -a data/raw/gene_expression/athaliana/E-TABM-17.sdrf.txt --ecotype Columbia-0 --organism-parts "rosette leaf" root flower seed -o data/intermediate/gene_expression/athaliana/athaliana_columbia_top4.tsv
+	# TODO no more median aggregation, check if normalized already
+	# python3 src/preprocessing/preprocessing_geo.py --remove-zero-var -i data/raw/gene_expression/ecoli/GDS680.soft.gz -m data/raw/uniprot_swissprot/ECOLI_83333_idmapping.dat.gz -o data/intermediate/gene_expression/ecoli/GDS680.tsv
+	# python3 src/preprocessing/preprocessing_geo.py --remove-zero-var --quantile-normalize -i data/raw/gene_expression/ecoli/GDS680.soft.gz -m data/raw/uniprot_swissprot/ECOLI_83333_idmapping.dat.gz -o data/intermediate/gene_expression/ecoli/GDS680_norm.tsv
+	# python3 src/preprocessing/preprocessing_geo.py --remove-zero-var --exp 2 -i data/raw/gene_expression/yeast/GDS91.soft.gz -m data/raw/uniprot_swissprot/YEAST_559292_idmapping.dat.gz -o data/intermediate/gene_expression/yeast/GDS91.tsv
+	# python3 src/preprocessing/preprocessing_geo.py --remove-zero-var --exp 2 --quantile-normalize -i data/raw/gene_expression/yeast/GDS91.soft.gz -m data/raw/uniprot_swissprot/YEAST_559292_idmapping.dat.gz -o data/intermediate/gene_expression/yeast/GDS91_norm.tsv
+	# python3 src/preprocessing/preprocessing_gtex_parallel.py -i data/raw/gene_expression/human -o data/intermediate/gene_expression/human
+
+preprocessing_go_data:
+	python3 src/preprocessing/gene_ontology.py -i data/raw/gene_ontology/goa_human.gaf.gz -o data/intermediate/gene_ontology/goa_human.tsv 
+	python3 src/preprocessing/gene_ontology.py -i data/raw/gene_ontology/18.E_coli_MG1655.goa -o data/intermediate/gene_ontology/goa_ecoli.tsv 
+	python3 src/preprocessing/gene_ontology.py -i data/raw/gene_ontology/goa_arabidopsis.gaf.gz -o data/intermediate/gene_ontology/goa_athaliana.tsv
+	python3 src/preprocessing/gene_ontology.py -i data/raw/gene_ontology/goa_yeast.gaf.gz -o data/intermediate/gene_ontology/goa_yeast.tsv
+
+preprocessing_gene_positions:
+	python3 src/preprocessing/gene_positions.py -i data/raw/gene_positions/Homo_sapiens.GRCh38.104.gff3.gz -o data/intermediate/gene_positions/gene_positions_human.tsv -m data/raw/uniprot_swissprot/HUMAN_9606_idmapping.dat.gz -c Ensembl
+	python3 src/preprocessing/gene_positions.py -i data/raw/gene_positions/Arabidopsis_thaliana.TAIR10.51.gff3.gz -o data/intermediate/gene_positions/gene_positions_athaliana.tsv -m data/raw/uniprot_swissprot/ARATH_3702_idmapping.dat.gz -c EnsemblGenome
+	python3 src/preprocessing/gene_positions.py -i data/raw/gene_positions/Escherichia_coli_str_k_12_substr_mg1655_gca_000005845.ASM584v2.49.gff3.gz -o data/intermediate/gene_positions/gene_positions_ecoli.tsv -m data/raw/uniprot_swissprot/ECOLI_83333_idmapping.dat.gz -c EnsemblGenome
+	python3 src/preprocessing/gene_positions.py -i data/raw/gene_positions/Saccharomyces_cerevisiae.R64-1-1.104.gff3.gz -o data/intermediate/gene_positions/gene_positions_yeast.tsv -m data/raw/uniprot_swissprot/YEAST_559292_idmapping.dat.gz -c EnsemblGenome
+
+
+## Remove all dataset and feature data
+clean:
+	rm data/datasets/*.tsv
+	rm data/datasets/*.fasta
+	rm data/datasets/*.clstr
+	find data/features/ -name *.tsv -delete
 
 #################################################################################
 # Self Documenting Commands                                                     #
@@ -71,7 +124,6 @@ blastdb_uniref90:
 
 .DEFAULT_GOAL := help
 
-# Copied from https://github.com/drivendata/cookiecutter-data-science
 # Inspired by <http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html>
 # sed script explained:
 # /^##/:

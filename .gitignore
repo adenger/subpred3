@@ -1,6 +1,11 @@
-data/intermediate/blast.tar.xz
-data/intermediate/blast/
-data/raw/swissprot/uniprot-reviewed_yes.tab.gz
+data/*
+bin/*
+reports/*
+subpred_data.tar
+subpred_data_uniref.tar
+logs/*.log
+notebooks/plots/*
+notebooks/tmp/*.tsv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -141,5 +146,7 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+
 # .vscode/settings.json
-.vscode/settings.json
+notebooks/Dataset/uniprot-reviewed_yes.tab.gz
+.vscode/*

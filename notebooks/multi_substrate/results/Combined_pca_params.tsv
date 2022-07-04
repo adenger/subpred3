@@ -1,0 +1,8 @@
+	0	1	2	3	4	5	6	7	8	9
+pca__n_components	0.81	0.8300000000000001	0.8	0.8	0.8200000000000001	0.81	0.8	0.86	0.8	0.81
+pssmselector__iterations	1	1	1	1	1	1	1	1	1	1
+pssmselector__uniref_threshold	50	50	50	50	50	50	50	50	50	50
+svc__C	1	10	10	10	10	10	10	10	10	10
+svc__class_weight	balanced	balanced	balanced	balanced	balanced	balanced	balanced	balanced	balanced	balanced
+svc__decision_function_shape	ovo	ovo	ovo	ovo	ovo	ovo	ovo	ovo	ovo	ovo
+svc__gamma	scale	scale	scale	scale	scale	scale	scale	scale	scale	scale
