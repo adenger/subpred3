@@ -7,15 +7,14 @@ def __get_amino_acids():
     return list("ACDEFGHIKLMNPQRSTVWY")
 
 
-def __amino_acid_comp(sequence: str, alphabet: str = "ACDEFGHIKLMNPQRSTVWY"):
-    counter = OrderedDict({aa: 0 for aa in alphabet})
+def __amino_acid_comp(sequence: str):
+    counter = OrderedDict({aa: 0 for aa in __get_amino_acids()})
     for c in sequence:
         counter[c] += 1
     return np.divide(np.array(list(counter.values())), len(sequence))
 
 
 def calculate_aac(sequences: pd.Series):
-
     return pd.DataFrame(
         data=sequences.apply(__amino_acid_comp).tolist(),
         index=sequences.index,
@@ -23,21 +22,25 @@ def calculate_aac(sequences: pd.Series):
     )
 
 
-def __dipeptide_comp(sequence: str, alphabet: str = "ACDEFGHIKLMNPQRSTVWY"):
-    counter = OrderedDict({aa1 + aa2: 0 for aa1 in alphabet for aa2 in alphabet})
+def __get_dipeptides():
+    return sorted(
+        [aa1 + aa2 for aa1 in __get_amino_acids() for aa2 in __get_amino_acids()]
+    )
+
+
+def __dipeptide_comp(sequence: str):
+    counter = OrderedDict({dipeptide: 0 for dipeptide in __get_dipeptides()})
     for i in range(len(sequence) - 1):
         peptide = sequence[i : i + 2]
         counter[peptide] += 1
-    return np.array([b / (len(sequence) - 1) for _, b in sorted(counter.items())])
+    return np.divide(np.array(list(counter.values())), len(sequence) - 1)
 
 
 def calculate_paac(sequences: pd.Series):
     return pd.DataFrame(
         data=sequences.apply(__dipeptide_comp).tolist(),
         index=sequences.index,
-        columns=[
-            aa1 + aa2 for aa1 in __get_amino_acids() for aa2 in __get_amino_acids()
-        ],
+        columns=__get_dipeptides(),
     )
 
 
