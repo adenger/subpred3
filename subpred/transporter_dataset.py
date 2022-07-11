@@ -110,14 +110,24 @@ def create_dataset(
     log.debug("=" * 60)
     df = df.rename(
         columns={
+            # Columns in old version of REST API
             "Keyword ID": "keyword_ids",
             "Gene ontology IDs": "go_ids",
             "Gene ontology (GO)": "go_terms",
             "Cross-reference (TCDB)": "tcdb_id",
-            "Taxonomic lineage IDs": "tax_id",
+            # Columns in new version of REST API
+            "Gene Ontology IDs": "go_ids",
+            "Gene Ontology (GO)": "go_terms",
+            "TCDB": "tcdb_id",
+            "Organism (ID)": "organism_id",
         },
     )
     df.columns = df.columns.map(lambda c: c.lower().replace(" ", "_"))
+    # for compatibility with older scripts
+    df["tax_id"] = df["organism_id"]
+    if "entry_name" in df.columns:
+        # In new version of Uniprot API, there is an additional column
+        df = df.drop("entry_name", axis=1)
     df.index = df.index.rename("Uniprot")
     df.tcdb_id = df.tcdb_id.str.replace(";", "").str.strip()
     df.sequence = df.sequence.str.replace("X", "").str.replace("U", "")

@@ -41,7 +41,9 @@ env_export:
 
 ## Download raw data
 raw_data:
-	curl "https://www.uniprot.org/uniprot/?query=reviewed:yes&format=tab&columns=id,genes,protein%20names,organism,organism-id,keyword-id,keywords,go-id,go,database(TCDB),existence,sequence,fragment&sort=score" > data/raw/swissprot/sp_data.tsv
+	curl "https://rest.uniprot.org/uniprotkb/stream?compressed=true&fields=accession%2Cid%2Cgene_names%2Cprotein_name%2Corganism_name%2Corganism_id%2Ckeywordid%2Ckeyword%2Cgo_id%2Cgo%2Cxref_tcdb%2Cprotein_existence%2Csequence%2Cfragment&format=tsv&query=%2A%20AND%20%28reviewed%3Atrue%29" > data/raw/swissprot/uniprot-reviewed_yes.tab.gz
+# Link for old API
+#	curl "https://www.uniprot.org/uniprot/?query=reviewed:yes&format=tab&columns=id,genes,protein%20names,organism,organism-id,keyword-id,keywords,go-id,go,database(TCDB),existence,sequence,fragment&sort=score" > data/raw/swissprot/sp_data.tsv
 
 #################################################################################
 # Raw data: BLAST                           		                            #

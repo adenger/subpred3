@@ -1,6 +1,9 @@
 data/intermediate/blast.tar.xz
 data/intermediate/blast/
 data/raw/swissprot/uniprot-reviewed_yes.tab.gz
+data/raw/swissprot/uniprot-reviewed_yes.tab.gz.bak
+data/raw/swissprot/uniprot-reviewed_yes.tab.gz.new.bak
+data/raw/swissprot/uniprot-reviewed_yes.tab.gz.old.bak
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -143,3 +146,4 @@ cython_debug/
 
 # .vscode/settings.json
 .vscode/settings.json
+
