@@ -54,6 +54,7 @@ def feature_importance_plot(
 
 
 def pca_plot_2d(df_feature, labels: pd.Series, figsize=(10, 6)):
+    # Important: labels parameter must have a name.
     df_pca2 = perform_pca(df_feature, labels, n_components=2)
     plt.figure(figsize=figsize)
     sns.set_style("darkgrid")
