@@ -9,6 +9,7 @@ from sklearn.decomposition import PCA
 from sklearn.pipeline import make_pipeline
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import (
+    LeaveOneOut,
     cross_val_score,
     cross_val_predict,
     train_test_split,
@@ -60,7 +61,15 @@ def get_independent_test_set(X, y, sample_names=None, random_state=42, test_size
         )
 
 
-# TODO nested loocv
+def __get_cv_method(cross_val_method: str):
+    if cross_val_method == "5fold":
+        return 5
+    elif cross_val_method.upper() == "LOOCV":
+        return LeaveOneOut()
+    else:
+        raise ValueError(f"Unsupported CV method: {cross_val_method}")
+
+
 def optimize_hyperparams(
     X_train,
     y_train,
@@ -76,6 +85,7 @@ def optimize_hyperparams(
     remove_zero_var=False,
     select_k_steps=1,
     max_k_to_select: int = None,
+    cross_val_method: str = "5fold",
 ):
     pipe_list = list()
     param_grid = dict()
@@ -145,7 +155,7 @@ def optimize_hyperparams(
     gsearch = GridSearchCV(
         estimator=pipe,
         param_grid=param_grid,
-        cv=5,
+        cv=__get_cv_method(cross_val_method),
         scoring="f1_macro",
         n_jobs=-1,
         return_train_score=True,
@@ -209,7 +219,11 @@ def quick_test(df_features, labels: pd.Series):
 
 # kwargs are passed to hyperparam optimization
 def full_test(
-    df_features, labels, repetitions=10, **kwargs,
+    df_features: pd.DataFrame,
+    labels: pd.Series,
+    repetitions: int = 10,
+    cross_val_method: str = "5fold",
+    **kwargs,
 ):
     X, y, feature_names, sample_names = preprocess_pandas(
         df_features, labels, return_names=True
@@ -229,12 +243,19 @@ def full_test(
         )
 
         gsearch = optimize_hyperparams(
-            X_train, y_train, verbose=False, feature_names=feature_names, **kwargs
+            X_train,
+            y_train,
+            verbose=False,
+            feature_names=feature_names,
+            cross_val_method=cross_val_method,
+            **kwargs,
         )
         df_params[random_seed] = pd.Series(gsearch.best_params_)
         best_estimator = gsearch.best_estimator_
 
-        y_pred_train = cross_val_predict(best_estimator, X_train, y_train)
+        y_pred_train = cross_val_predict(
+            best_estimator, X_train, y_train, cv=__get_cv_method(cross_val_method)
+        )
         df_report_train = get_classification_report(
             X_train, y_pred_train, best_estimator, labels
         )
