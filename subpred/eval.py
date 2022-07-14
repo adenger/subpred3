@@ -223,6 +223,7 @@ def full_test(
     labels: pd.Series,
     repetitions: int = 10,
     cross_val_method: str = "5fold",
+    verbose:bool = False,
     **kwargs,
 ):
     X, y, feature_names, sample_names = preprocess_pandas(
@@ -245,12 +246,12 @@ def full_test(
         gsearch = optimize_hyperparams(
             X_train,
             y_train,
-            verbose=False,
+            verbose=verbose,
             feature_names=feature_names,
             cross_val_method=cross_val_method,
             **kwargs,
         )
-        df_params[random_seed] = pd.Series(gsearch.best_params_)
+        df_params[random_seed] = pd.Series(gsearch.best_params_, dtype="object")
         best_estimator = gsearch.best_estimator_
 
         y_pred_train = cross_val_predict(
