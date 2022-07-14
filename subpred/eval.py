@@ -254,7 +254,11 @@ def full_test(
         best_estimator = gsearch.best_estimator_
 
         y_pred_train = cross_val_predict(
-            best_estimator, X_train, y_train, cv=__get_cv_method(cross_val_method)
+            best_estimator,
+            X_train,
+            y_train,
+            cv=__get_cv_method(cross_val_method),
+            n_jobs=-1,
         )
         df_report_train = get_classification_report(
             X_train, y_pred_train, best_estimator, labels
@@ -307,21 +311,18 @@ def full_test(
 #     return report_df.round(3), confusion_matrix_df
 
 
-# TODO main method that comines all
-
-# TODO Return Table instead of prints
 def models_quick_compare(X_train, y_train):
     records = []
     for estimator in [
-        LinearSVC(max_iter=1e6),
-        LinearSVC(max_iter=1e6, class_weight="balanced"),
-        SVC(),
-        SVC(class_weight="balanced"),
+        LinearSVC(random_state=0, max_iter=1e6),
+        LinearSVC(random_state=0, max_iter=1e6, class_weight="balanced"),
+        SVC(random_state=0,),
+        SVC(random_state=0, class_weight="balanced"),
         GaussianNB(),
         KNeighborsClassifier(),
-        RandomForestClassifier(),
-        RandomForestClassifier(class_weight="balanced"),
-        SGDClassifier(),
+        RandomForestClassifier(random_state=0,),
+        RandomForestClassifier(random_state=0, class_weight="balanced"),
+        SGDClassifier(random_state=0),
     ]:
         pipeline = make_pipeline(StandardScaler(), estimator)
         scores = cross_val_score(pipeline, X_train, y_train, scoring="f1_macro", cv=5)
