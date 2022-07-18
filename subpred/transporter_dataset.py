@@ -129,7 +129,12 @@ def create_dataset(
         # In new version of Uniprot API, there is an additional column
         df = df.drop("entry_name", axis=1)
     df.index = df.index.rename("Uniprot")
-    df.tcdb_id = df.tcdb_id.str.replace(";", "").str.strip()
+    # Remove trailing ";" from single TCDB IDs, without affecting entries that have >1 TCBD IDs or are NaN
+    df.tcdb_id = df.tcdb_id.str.split(";").apply(
+        lambda x: ";".join([elem.strip() for elem in x if elem != ""])
+        if type(x) != float
+        else x
+    )
     df.sequence = df.sequence.str.replace("X", "").str.replace("U", "")
 
     log.debug(f"Removing {df[df.keywords.isnull()].shape[0]} rows without any keywords")
@@ -577,7 +582,11 @@ if __name__ == "__main__":
     parser.add_argument("--output-fasta", type=str)
     parser.add_argument("--output-log", type=str)
     parser.add_argument(
-        "--tax-ids", type=int, nargs="+", help="tax id(s) to filter for", default=None,
+        "--tax-ids",
+        type=int,
+        nargs="+",
+        help="tax id(s) to filter for",
+        default=None,
     )
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument(
