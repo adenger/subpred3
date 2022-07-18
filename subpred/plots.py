@@ -206,6 +206,7 @@ def downsample_majority_class_plot(
     random_seeds=list(range(50)),
     figsize=(10, 7),
     n_jobs=4,
+    include_macro:bool= True
 ):
     """
     Binary classification plot.
@@ -235,7 +236,8 @@ def downsample_majority_class_plot(
             scorer = make_scorer(f1_score, pos_label=label_numerical)
             scorers_dict[scorer_name] = scorer
 
-        scorers_dict["F1 macro"] = make_scorer(f1_score, average="macro")
+        if include_macro:
+            scorers_dict["F1 macro"] = make_scorer(f1_score, average="macro")
 
         records = []
         for scorer_name, scorer in sorted(scorers_dict.items()):
