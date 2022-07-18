@@ -53,12 +53,12 @@ def feature_importance_plot(
     )
 
 
-def pca_plot_2d(df_feature, labels: pd.Series, figsize=(10, 6)):
+def pca_plot_2d(df_feature, labels: pd.Series, labels2: pd.Series = None, figsize=(10, 6)):
     # Important: labels parameter must have a name.
     df_pca2 = perform_pca(df_feature, labels, n_components=2)
     plt.figure(figsize=figsize)
     sns.set_style("darkgrid")
-    return sns.scatterplot(data=df_pca2, x="PC1", y="PC2", hue=labels.name)
+    return sns.scatterplot(data=df_pca2, x="PC1", y="PC2", hue=labels.name, style=labels2)
 
 
 def pca_plot_3d(df_feature, labels, figsize=(10, 10)):
