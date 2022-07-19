@@ -61,7 +61,9 @@ def pca_plot_2d(
     marker_size: int = None,
     marker_opacity:float = None
 ):
-    # Important: labels parameter must have a name.
+    # labels series must have a name, otherwise PCA throws error
+    if labels.name is None:
+        labels.name = "labels"
     df_pca2 = perform_pca(df_feature, labels, n_components=2)
     plt.figure(figsize=figsize)
     sns.set_style("darkgrid")
