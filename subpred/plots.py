@@ -53,12 +53,27 @@ def feature_importance_plot(
     )
 
 
-def pca_plot_2d(df_feature, labels: pd.Series, labels2: pd.Series = None, figsize=(10, 6)):
+def pca_plot_2d(
+    df_feature,
+    labels: pd.Series,
+    labels2: pd.Series = None,
+    figsize: tuple = (10, 6),
+    marker_size: int = None,
+    marker_opacity:float = None
+):
     # Important: labels parameter must have a name.
     df_pca2 = perform_pca(df_feature, labels, n_components=2)
     plt.figure(figsize=figsize)
     sns.set_style("darkgrid")
-    return sns.scatterplot(data=df_pca2, x="PC1", y="PC2", hue=labels.name, style=labels2)
+    kwargs = {}
+    if marker_size:
+        kwargs.update({"s": marker_size})
+    if marker_opacity:
+        assert marker_opacity >= 0 and marker_opacity <= 1
+        kwargs.update({"alpha": marker_opacity})
+    return sns.scatterplot(
+        data=df_pca2, x="PC1", y="PC2", hue=labels.name, style=labels2, **kwargs
+    )
 
 
 def pca_plot_3d(df_feature, labels, figsize=(10, 10)):
@@ -87,7 +102,12 @@ def corr_heatmap(df_feature, figsize=(15, 10)):
 
 
 def clustermap(df_feature):
-    return sns.clustermap(df_feature, method="ward", yticklabels=[], xticklabels=[],)
+    return sns.clustermap(
+        df_feature,
+        method="ward",
+        yticklabels=[],
+        xticklabels=[],
+    )
 
 
 def labeled_clustermap(
@@ -192,10 +212,16 @@ def downsampling_plot(
         for ssl in sl:
             records.append(ssl)
     results_df = pd.DataFrame.from_records(
-        records, columns=["Score name", "Total Samples", "Score"],
+        records,
+        columns=["Score name", "Total Samples", "Score"],
     )
     plt.figure(figsize=figsize)
-    g = sns.lineplot(data=results_df, x="Total Samples", y="Score", hue="Score name",)
+    g = sns.lineplot(
+        data=results_df,
+        x="Total Samples",
+        y="Score",
+        hue="Score name",
+    )
     return g
 
 
@@ -206,7 +232,7 @@ def downsample_majority_class_plot(
     random_seeds=list(range(50)),
     figsize=(10, 7),
     n_jobs=4,
-    include_macro:bool= True
+    include_macro: bool = True,
 ):
     """
     Binary classification plot.
@@ -261,8 +287,14 @@ def downsample_majority_class_plot(
     labels_unique = sorted(labels.unique())
     x_lab = f"|{labels_unique[0]}|/|{labels_unique[1]}|"
     results_df = pd.DataFrame.from_records(
-        records, columns=["Score name", x_lab, "Score"],
+        records,
+        columns=["Score name", x_lab, "Score"],
     )
     plt.figure(figsize=figsize)
-    g = sns.lineplot(data=results_df, x=x_lab, y="Score", hue="Score name",)
+    g = sns.lineplot(
+        data=results_df,
+        x=x_lab,
+        y="Score",
+        hue="Score name",
+    )
     return g
