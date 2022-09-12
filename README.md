@@ -1,5 +1,8 @@
 # subpred2
 
+**Work in progress**
+
+TODO test new make file commands
 
 ## How to reproduce results:
 
