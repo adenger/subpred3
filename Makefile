@@ -43,30 +43,22 @@ requirements:
 # Raw data                                                                      #
 #################################################################################
 
-# Download raw data from onedrive
-download_data:
-	cp /mnt/c/Users/adeng/OneDrive/PhD/Manuskript1/Data/subpred_data.tar .
-
 ## Extract raw data
-raw_data: subpred_data.tar
-	tar xvf subpred_data.tar
-	mkdir data/intermediate/blast
+raw_data: data_full.tar
+	tar xvf data_full.tar
 	tar xf data/intermediate/blast.tar.xz --directory=data/intermediate/blast
-	rm subpred_data.tar
 	rm data/intermediate/blast.tar.xz
 
 #################################################################################
 # Raw data: BLAST databases                                                     #
 #################################################################################
 
-# cp /mnt/c/Users/adeng/OneDrive/subpred_data/subpred_data_uniref.tar .
-
-## Download and init blast dbs for recalculating PSSM feature. >100GB needed
+## Extract and init blast dbs for recalculating PSSM feature. >100GB needed
 blast_databases: blastdb_extract blastdb_uniref50 blastdb_uniref90
 
-blastdb_extract: subpred_data_uniref.tar
-	tar xvf subpred_data_uniref.tar
-	rm subpred_data_uniref.tar
+# blastdb_extract: subpred_data_uniref.tar
+#	tar xvf subpred_data_uniref.tar
+#	rm subpred_data_uniref.tar
 
 blastdb_uniref50: 
 	@echo Creating BLASTDB...
