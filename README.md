@@ -1,16 +1,28 @@
-# subpred
+# subpred2
 
-## Run "make help" for information
 
-make download_data
+## How to reproduce results:
+
+1. Install miniconda
+2. Recreate conda environment:
+```
+conda env create --file environment.yml
+```
+3. Activate conda environment: 
+```
+conda activate subpred
+```
+4. Download **data_full.tar** from https://cloud.hiz-saarland.de/s/sGTyGApAqdgAQiB and place in repo folder
+5. Extract tar archives:
+```
 make raw_data
-make preprocessing
+```
+6. Create BLAST databases (Needs >100GB of space and 1-2 hours): 
+    - This step is optional, as the tar file also contains pre-computed PSSMs for each protein in the dataset in **data/intermediate/blast**
+```
+make blast_databases
+```
 
+## Note
 
-fasta file convention:
-
->sp|Uniprot|Gene_names|TaxID|TCDB_ID|Substrates|Description
-
-This is the old version of the project, and contains the notebooks and code used for the Manuscript. For a cleaner version with automatic downloading of raw data, please switch to the main branch.
-
-If you want to reproduce the results, we can send you the exact data we used.
+*This is an older version of the project, and contains the notebooks and code used to calculate the results included in the Manuscript. For a cleaner version with automatic downloading of raw data, please switch to the main branch.*
