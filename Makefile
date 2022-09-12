@@ -54,7 +54,7 @@ raw_data: data_full.tar
 #################################################################################
 
 ## Extract and init blast dbs for recalculating PSSM feature. >100GB needed
-blast_databases: blastdb_extract blastdb_uniref50 blastdb_uniref90
+blast_databases: blastdb_uniref50 blastdb_uniref90
 
 # blastdb_extract: subpred_data_uniref.tar
 #	tar xvf subpred_data_uniref.tar
