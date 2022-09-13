@@ -6,6 +6,7 @@ subpred_data_uniref.tar
 data_full.tar
 logs/*.log
 notebooks/plots/*
+!notebooks/plots/.gitkeep
 notebooks/tmp/*.tsv
 
 # Byte-compiled / optimized / DLL files
