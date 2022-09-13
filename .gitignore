@@ -3,6 +3,7 @@ bin/*
 reports/*
 subpred_data.tar
 subpred_data_uniref.tar
+data_full.tar
 logs/*.log
 notebooks/plots/*
 notebooks/tmp/*.tsv
