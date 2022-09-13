@@ -9,6 +9,7 @@ notebooks/plots/*
 !notebooks/plots/.gitkeep
 notebooks/tmp/*.tsv
 notebooks/*.png
+notebooks/multi_substrate/*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
