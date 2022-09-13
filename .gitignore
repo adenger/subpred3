@@ -8,6 +8,7 @@ logs/*.log
 notebooks/plots/*
 !notebooks/plots/.gitkeep
 notebooks/tmp/*.tsv
+notebooks/*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
