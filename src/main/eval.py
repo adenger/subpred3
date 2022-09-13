@@ -274,15 +274,15 @@ def full_test(
 def models_quick_compare(X_train, y_train):
     records = []
     for estimator in [
-        LinearSVC(max_iter=1e6),
-        LinearSVC(max_iter=1e6, class_weight="balanced"),
+        LinearSVC(max_iter=1e6, random_state=0),
+        LinearSVC(max_iter=1e6, class_weight="balanced", random_state=0),
         SVC(),
         SVC(class_weight="balanced"),
         GaussianNB(),
         KNeighborsClassifier(),
-        RandomForestClassifier(),
-        RandomForestClassifier(class_weight="balanced"),
-        SGDClassifier(),
+        RandomForestClassifier(random_state=0),
+        RandomForestClassifier(class_weight="balanced", random_state=0),
+        SGDClassifier(random_state=0),
     ]:
         pipeline = make_pipeline(StandardScaler(), estimator)
         scores = cross_val_score(pipeline, X_train, y_train, scoring="f1_macro", cv=5)
