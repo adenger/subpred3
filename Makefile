@@ -46,6 +46,7 @@ requirements:
 ## Extract raw data
 raw_data: data_full.tar
 	tar xvf data_full.tar
+	mkdir data/intermediate/blast
 	tar xf data/intermediate/blast.tar.xz --directory=data/intermediate/blast
 	rm data/intermediate/blast.tar.xz
 
