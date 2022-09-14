@@ -1,8 +1,10 @@
 # subpred2
 
-**Work in progress**
+## Note
 
-TODO test new make file commands
+*This is an older version of the project, and contains the notebooks and code used to calculate the results included in the Manuscript. For a refactored version with automatic downloading of raw data, please switch to the main branch. The exact dataset that was used for manuscript is available at https://cloud.hiz-saarland.de/s/sGTyGApAqdgAQiB .*
+
+*Tested on Ubuntu 18.04*
 
 ## How to reproduce results:
 
@@ -26,8 +28,6 @@ make raw_data
 make blast_databases
 ```
 
-*Tested on Ubuntu 18.04*
 
-## Note
 
-*This is an older version of the project, and contains the notebooks and code used to calculate the results included in the Manuscript. For a cleaner version with automatic downloading of raw data, please switch to the main branch.*
+
