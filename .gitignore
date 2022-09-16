@@ -148,5 +148,4 @@ cython_debug/
 # .vscode/settings.json
 .vscode/settings.json
 
-data/raw/uniref/uniref50/Makefile
-data/raw/uniref/uniref90/Makefile
+
