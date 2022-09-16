@@ -13,7 +13,7 @@ conda env create --file environment.yml
 ```
 conda activate subpred
 ```
-4. Install code as python package: 
+4. Install code as python package into environment: 
 ```
 pip install -e .
 ```
@@ -37,11 +37,11 @@ conda env create --file environment.yml
 ```
 conda activate subpred
 ```
-4. Install code as python package: 
+4. Install code as python package into environment: 
 ```
 pip install -e .
 ```
-5. Download data_full.tar from https://cloud.hiz-saarland.de/s/sGTyGApAqdgAQiB
+5. Download data_full.tar from https://cloud.hiz-saarland.de/s/sGTyGApAqdgAQiB and place it in repository
 6. Rename existing data folder:
 ```
 mv data data_bak
@@ -50,7 +50,9 @@ mv data data_bak
 ```
 make raw_data_manuscript
 ```
-8. Create BLAST databases (Needs >100GB of space and takes several hours): 
+8. Create BLAST databases (Needs >100GB of space and takes several hours):
+    - This step is optional, as the previous step extracts pre-computed PSSMs for all proteins to *data/intermediate/blast*
+  
 ```
 make blast_databases
 ```
