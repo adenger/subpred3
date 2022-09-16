@@ -13,7 +13,7 @@ conda env create --file environment.yml
 ```
 conda activate subpred
 ```
-4. Install code as python package: 
+4. Install code as python package into environment: 
 ```
 pip install -e .
 ```
@@ -37,7 +37,7 @@ conda env create --file environment.yml
 ```
 conda activate subpred
 ```
-4. Install code as python package: 
+4. Install code as python package into environment: 
 ```
 pip install -e .
 ```
