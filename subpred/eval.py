@@ -7,7 +7,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC, LinearSVC
 from sklearn.decomposition import PCA
 from sklearn.pipeline import make_pipeline
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import (
+    classification_report,
+    confusion_matrix,
+    balanced_accuracy_score,
+)
 from sklearn.model_selection import (
     LeaveOneOut,
     cross_val_score,
@@ -183,7 +187,9 @@ def get_confusion_matrix(X_test, y_test, clf, labels: pd.Series = None):
     return df_confusion_matrix
 
 
-def get_classification_report(X_test, y_test, clf, labels: pd.Series = None):
+def get_classification_report(
+    X_test, y_test, clf, labels: pd.Series = None, add_balanced_accuracy: bool = False
+):
     y_pred = clf.predict(X_test)
 
     report_dict = classification_report(y_true=y_test, y_pred=y_pred, output_dict=True)
@@ -192,6 +198,11 @@ def get_classification_report(X_test, y_test, clf, labels: pd.Series = None):
     df_report = df_report.astype({"support": "int"})
     df_report = df_report.round(3)
     df_report = df_report.drop("accuracy")
+
+    if add_balanced_accuracy:
+        balanced_accuracy = balanced_accuracy_score(y_true=y_test, y_pred=y_pred).round(3)
+        support = df_report.loc["macro avg", "support"]
+        df_report.loc["balanced accuracy"] = [balanced_accuracy] * 3 + [support]
 
     if labels is not None:
         # Since numerical labels are assigned alphabetically
@@ -223,7 +234,7 @@ def full_test(
     labels: pd.Series,
     repetitions: int = 10,
     cross_val_method: str = "5fold",
-    verbose:bool = False,
+    verbose: bool = False,
     **kwargs,
 ):
     X, y, feature_names, sample_names = preprocess_pandas(
