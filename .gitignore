@@ -8,6 +8,8 @@ data/raw/uniref/uniref50/uniref50.fasta
 data/raw/uniref/uniref50/uniref50.fasta.xz
 data/raw/uniref/uniref90/uniref90.fasta
 data/raw/uniref/uniref90/uniref90.fasta.xz
+data_full.tar
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -150,5 +152,4 @@ cython_debug/
 
 # .vscode/settings.json
 .vscode/settings.json
-
 
