@@ -50,7 +50,9 @@ mv data data_bak
 ```
 make raw_data_manuscript
 ```
-8. Create BLAST databases (Needs >100GB of space and takes several hours): 
+8. Create BLAST databases (Needs >100GB of space and takes several hours):
+    - This step is optional, as the previous step extracts pre-computed PSSMs for all proteins to *data/intermediate/blast*
+  
 ```
 make blast_databases
 ```
