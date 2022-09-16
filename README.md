@@ -1,8 +1,8 @@
 The Makefiles included here download the most recent versions of the raw datasets.
 For the analyses in the manuscript and in the notebooks, we used a dataset that was downloaded on November 15, 2021. More recent datasets can contain a slightly different set of proteins and annotations, which can influence the evaluation results and the dataset analysis.
-If you want to reproduce or validate the results, follow the section *Reproduce results from manuscript:*.
+If you want to reproduce or validate the results from the manuscript, follow the section *Reproduce results from manuscript* below.
 
-Setup:
+## Setup:
 
 1. Install miniconda
 2. Recreate conda environment:
@@ -26,7 +26,7 @@ make raw_data
 make blast_databases
 ```
 
-Reproduce results from manuscript:
+## Reproduce results from manuscript:
 
 1. Install miniconda
 2. Recreate conda environment:
@@ -42,7 +42,7 @@ conda activate subpred
 pip install -e .
 ```
 5. Download data_full.tar from https://cloud.hiz-saarland.de/s/sGTyGApAqdgAQiB
-6. Delete folder data:
+6. Rename existing data folder:
 ```
 mv data data_bak
 ```
