@@ -9,7 +9,7 @@ data/raw/uniref/uniref50/uniref50.fasta.xz
 data/raw/uniref/uniref90/uniref90.fasta
 data/raw/uniref/uniref90/uniref90.fasta.xz
 data_full.tar
-
+data_bak/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
