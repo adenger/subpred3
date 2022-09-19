@@ -3,7 +3,7 @@ from sklearn.feature_selection import SelectKBest, VarianceThreshold
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.svm import SVC, LinearSVC
 from sklearn.decomposition import PCA
 from sklearn.pipeline import make_pipeline
@@ -11,6 +11,7 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
     balanced_accuracy_score,
+    accuracy_score,
 )
 from sklearn.model_selection import (
     LeaveOneOut,
@@ -192,26 +193,33 @@ def get_classification_report(
 ):
     y_pred = clf.predict(X_test)
 
-    report_dict = classification_report(y_true=y_test, y_pred=y_pred, output_dict=True)
+    report_dict = classification_report(
+        y_true=y_test,
+        y_pred=y_pred,
+        output_dict=True,
+    )
 
     df_report = pd.DataFrame.from_dict(report_dict).T
     df_report = df_report.astype({"support": "int"})
     df_report = df_report.round(3)
     df_report = df_report.drop("accuracy")
 
-    if add_balanced_accuracy:
-        balanced_accuracy = balanced_accuracy_score(y_true=y_test, y_pred=y_pred).round(3)
-        support = df_report.loc["macro avg", "support"]
-        df_report.loc["balanced accuracy"] = [balanced_accuracy] * 3 + [support]
-
     if labels is not None:
-        # Since numerical labels are assigned alphabetically
+        # Since numerical labels are assigned alphabetically by __encode_labels
         labels_unique = labels.unique()
         labels_unique = np.sort(labels_unique)
         labels_unique_dict = {
             str(pos): label for pos, label in enumerate(labels_unique)
         }
         df_report = df_report.rename(index=labels_unique_dict)
+
+    if add_balanced_accuracy:
+        balanced_accuracy = balanced_accuracy_score(y_true=y_test, y_pred=y_pred).round(
+            3
+        )
+        # Accuracy is calculated on all samples in the dataset
+        support = len(y_test)
+        df_report.loc["balanced accuracy"] = ["", "", balanced_accuracy, support]
 
     return df_report
 
