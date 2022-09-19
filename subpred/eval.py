@@ -11,7 +11,7 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
     balanced_accuracy_score,
-    f1_score
+    f1_score,
 )
 from sklearn.model_selection import (
     LeaveOneOut,
@@ -91,7 +91,7 @@ def optimize_hyperparams(
     select_k_steps=1,
     max_k_to_select: int = None,
     cross_val_method: str = "5fold",
-    n_jobs:int=-1
+    n_jobs: int = -1,
 ):
     pipe_list = list()
     param_grid = dict()
@@ -194,11 +194,7 @@ def get_classification_report(
 ):
     y_pred = clf.predict(X_test)
 
-    report_dict = classification_report(
-        y_true=y_test,
-        y_pred=y_pred,
-        output_dict=True,
-    )
+    report_dict = classification_report(y_true=y_test, y_pred=y_pred, output_dict=True,)
 
     df_report = pd.DataFrame.from_dict(report_dict).T
     df_report = df_report.astype({"support": "int"})
@@ -236,11 +232,13 @@ def quick_test(df_features, labels: pd.Series):
     gsearch = optimize_hyperparams(X, y, dim_reduction="kbest")
     print("Kbest", gsearch.best_score_.round(3))
 
+
 # kwargs are passed to hyperparam optimization
 def nested_loocv(
     df_features: pd.DataFrame,
     labels: pd.Series,
     verbose: bool = False,
+    decimal_places: int = 3,
     **kwargs,
 ):
     X, y, feature_names, sample_names = preprocess_pandas(
@@ -271,11 +269,14 @@ def nested_loocv(
 
         y_pred = best_estimator.predict(X_test)
         test_set_predictions.append(y_pred)
-    
+
+    df_results = pd.DataFrame(columns=["train", "test"])
+
     f1_train = np.mean(train_scores)
     f1_test = f1_score(y, test_set_predictions, average="macro")
+    df_results.loc["F1 (macro)"] = [f1_train, f1_test]
 
-    return f1_train, f1_test
+    return df_results.round(decimal_places)
 
 
 # kwargs are passed to hyperparam optimization
