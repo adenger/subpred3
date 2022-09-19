@@ -11,7 +11,7 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
     balanced_accuracy_score,
-    accuracy_score,
+    f1_score
 )
 from sklearn.model_selection import (
     LeaveOneOut,
@@ -91,6 +91,7 @@ def optimize_hyperparams(
     select_k_steps=1,
     max_k_to_select: int = None,
     cross_val_method: str = "5fold",
+    n_jobs:int=-1
 ):
     pipe_list = list()
     param_grid = dict()
@@ -162,7 +163,7 @@ def optimize_hyperparams(
         param_grid=param_grid,
         cv=__get_cv_method(cross_val_method),
         scoring="f1_macro",
-        n_jobs=-1,
+        n_jobs=n_jobs,
         return_train_score=True,
         refit=True,
     )
@@ -234,6 +235,47 @@ def quick_test(df_features, labels: pd.Series):
     print("PCA", gsearch.best_score_.round(3))
     gsearch = optimize_hyperparams(X, y, dim_reduction="kbest")
     print("Kbest", gsearch.best_score_.round(3))
+
+# kwargs are passed to hyperparam optimization
+def nested_loocv(
+    df_features: pd.DataFrame,
+    labels: pd.Series,
+    verbose: bool = False,
+    **kwargs,
+):
+    X, y, feature_names, sample_names = preprocess_pandas(
+        df_features, labels, return_names=True
+    )
+    # TODO parallelize outer loop
+
+    loo = LeaveOneOut()
+    train_scores = []
+    test_set_predictions = []
+    for train_index, test_index in loo.split(X):
+
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+
+        gsearch = optimize_hyperparams(
+            X_train,
+            y_train,
+            verbose=verbose,
+            feature_names=feature_names,
+            cross_val_method="LOOCV",
+            **kwargs,
+        )
+        best_estimator = gsearch.best_estimator_
+
+        train_score = gsearch.best_score_
+        train_scores.append(train_score)
+
+        y_pred = best_estimator.predict(X_test)
+        test_set_predictions.append(y_pred)
+    
+    f1_train = np.mean(train_scores)
+    f1_test = f1_score(y, test_set_predictions, average="macro")
+
+    return f1_train, f1_test
 
 
 # kwargs are passed to hyperparam optimization
