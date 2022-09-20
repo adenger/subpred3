@@ -20,6 +20,7 @@ from sklearn.model_selection import (
     train_test_split,
     GridSearchCV,
 )
+from joblib import Parallel, delayed
 import numpy as np
 import pandas as pd
 
@@ -233,50 +234,66 @@ def quick_test(df_features, labels: pd.Series):
     print("Kbest", gsearch.best_score_.round(3))
 
 
-# kwargs are passed to hyperparam optimization
+# kwargs are passed to gridsearch in inner loop
 def nested_loocv(
     df_features: pd.DataFrame,
     labels: pd.Series,
     verbose: bool = False,
     decimal_places: int = 3,
+    n_jobs_outer_loop: int = -1,
+    n_jobs_inner_loop: int = 1,
     **kwargs,
 ):
     X, y, feature_names, sample_names = preprocess_pandas(
         df_features, labels, return_names=True
     )
-    # TODO parallelize outer loop
 
-    loo = LeaveOneOut()
-    train_scores = []
-    test_set_predictions = []
-    for train_index, test_index in loo.split(X):
-
+    
+    def outer_loop(
+        X: np.ndarray,
+        y: np.ndarray,
+        feature_names: np.ndarray,
+        train_index: np.ndarray,
+        test_index: np.ndarray,
+    ):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
 
+        # inner loop
         gsearch = optimize_hyperparams(
             X_train,
             y_train,
             verbose=verbose,
             feature_names=feature_names,
             cross_val_method="LOOCV",
+            n_jobs=n_jobs_inner_loop,
             **kwargs,
         )
         best_estimator = gsearch.best_estimator_
 
         train_score = gsearch.best_score_
-        train_scores.append(train_score)
 
         y_pred = best_estimator.predict(X_test)
-        test_set_predictions.append(y_pred)
 
-    df_results = pd.DataFrame(columns=["train", "test"])
+        # y_pred and y_test are both numpy arrays, this does not work for multi-label clf!
+        return [train_score, y_pred[0], y_test[0]]
 
-    f1_train = np.mean(train_scores)
-    f1_test = f1_score(y, test_set_predictions, average="macro")
-    df_results.loc["F1 (macro)"] = [f1_train, f1_test]
+    splits = [(train_index, test_index) for train_index, test_index in LeaveOneOut().split(X)]
 
-    return df_results.round(decimal_places)
+    # setting all numpy arrays to read-only, to avoid race conditions
+    results = Parallel(n_jobs=n_jobs_outer_loop, mmap_mode="r")(
+        delayed(outer_loop)(X, y, feature_names, train_index, test_index)
+        for train_index, test_index in splits
+    )
+
+    df_results = pd.DataFrame.from_records(results, columns=["train_scores", "y_pred", "y_true"])
+
+    df_results_mean = pd.DataFrame(columns=["train", "test"])
+    f1_train = np.mean(df_results.train_scores)
+    f1_test = f1_score(y_true=df_results.y_true, y_pred=df_results.y_pred, average="macro")
+    df_results_mean.loc["F1 (macro)"] = [f1_train, f1_test]
+
+    return df_results_mean.round(decimal_places)
 
 
 # kwargs are passed to hyperparam optimization
