@@ -2,7 +2,7 @@
 
 ## Note
 
-*This is an older version of the project, and contains the notebooks and code used to calculate the results included in the Manuscript. For a refactored version with automatic downloading of raw data, please switch to the main branch. The exact dataset that was used for manuscript is available at https://cloud.hiz-saarland.de/s/sGTyGApAqdgAQiB .*
+*This is an older version of the project, and contains the notebooks and code used to calculate the results included in the first revision of the Manuscript.*
 
 *Tested on Ubuntu 18.04*
 
