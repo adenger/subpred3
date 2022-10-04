@@ -12,17 +12,24 @@ from sklearn.metrics import (
     confusion_matrix,
     balanced_accuracy_score,
     f1_score,
+    make_scorer,
+    accuracy_score,
+    precision_score,
+    recall_score,
 )
 from sklearn.model_selection import (
     LeaveOneOut,
+    StratifiedKFold,
     cross_val_score,
     cross_val_predict,
     train_test_split,
+    cross_validate,
     GridSearchCV,
 )
 from joblib import Parallel, delayed
 import numpy as np
 import pandas as pd
+from collections import defaultdict
 
 from .custom_transformers import PSSMSelector
 
@@ -222,6 +229,59 @@ def get_classification_report(
     return df_report
 
 
+def get_cv_scores(X: np.array, y: np.array, clf, labels: np.array = None, cv: int = 5):
+    metrics = {
+        "acc": make_scorer(accuracy_score),
+        "acc_bal": make_scorer(balanced_accuracy_score),
+        "f1_macro": make_scorer(f1_score, average="macro"),
+        "precision_macro": make_scorer(precision_score, average="macro"),
+        "recall_macro": make_scorer(recall_score, average="macro"),
+    }
+    label_names = sorted(set(y))
+    label_names_enc = sorted(set(y))
+    if labels is not None:
+        label_names = list(np.sort(np.unique(labels)))
+
+    for label_name, label_name_enc in zip(label_names, label_names_enc):
+        metrics.update(
+            {
+                f"f1_{label_name}": make_scorer(f1_score, pos_label=label_name_enc),
+                f"precision_{label_name}": make_scorer(
+                    precision_score, pos_label=label_name_enc
+                ),
+                f"recall_{label_name}": make_scorer(
+                    recall_score, pos_label=label_name_enc
+                ),
+            }
+        )
+
+    cv_results = cross_validate(
+        clf, X, y, scoring=metrics, n_jobs=-1, cv=cv, return_train_score=True
+    )
+
+    accuracies_individual = defaultdict(list)
+    for train_index, test_index in StratifiedKFold(cv).split(X, y):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        clf.fit(X_train,y_train)
+        y_pred = clf.predict(X_test)
+        c_matrix = confusion_matrix(y_test,y_pred)
+        accuracies = c_matrix.diagonal() / c_matrix.sum(axis=1)
+        for label_name, acc in zip(label_names, accuracies):
+            accuracies_individual[f"test_acc_{label_name}"].append(acc)
+
+    cv_results.update(accuracies_individual)
+
+    cv_df = pd.DataFrame.from_dict(cv_results).transpose()
+    cv_df.columns = list(range(1, cv + 1))
+    avg = cv_df.mean(axis=1)
+    sdev = cv_df.std(axis=1)
+    cv_df["avg"] = avg
+    cv_df["sdev"] = sdev
+    cv_df = cv_df.round(3)
+    return cv_df.sort_index()
+
+
 def quick_test(df_features, labels: pd.Series):
     X, y, feature_names, sample_names = preprocess_pandas(
         df_features, labels, return_names=True
@@ -248,7 +308,6 @@ def nested_loocv(
         df_features, labels, return_names=True
     )
 
-    
     def outer_loop(
         X: np.ndarray,
         y: np.ndarray,
@@ -278,7 +337,9 @@ def nested_loocv(
         # y_pred and y_test are both numpy arrays, this does not work for multi-label clf!
         return [train_score, y_pred[0], y_test[0]]
 
-    splits = [(train_index, test_index) for train_index, test_index in LeaveOneOut().split(X)]
+    splits = [
+        (train_index, test_index) for train_index, test_index in LeaveOneOut().split(X)
+    ]
 
     # setting all numpy arrays to read-only, to avoid race conditions
     results = Parallel(n_jobs=n_jobs_outer_loop, mmap_mode="r")(
@@ -286,11 +347,15 @@ def nested_loocv(
         for train_index, test_index in splits
     )
 
-    df_results = pd.DataFrame.from_records(results, columns=["train_scores", "y_pred", "y_true"])
+    df_results = pd.DataFrame.from_records(
+        results, columns=["train_scores", "y_pred", "y_true"]
+    )
 
     df_results_mean = pd.DataFrame(columns=["train", "test"])
     f1_train = np.mean(df_results.train_scores)
-    f1_test = f1_score(y_true=df_results.y_true, y_pred=df_results.y_pred, average="macro")
+    f1_test = f1_score(
+        y_true=df_results.y_true, y_pred=df_results.y_pred, average="macro"
+    )
     df_results_mean.loc["F1 (macro)"] = [f1_train, f1_test]
 
     return df_results_mean.round(decimal_places)
