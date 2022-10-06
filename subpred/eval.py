@@ -3,20 +3,33 @@ from sklearn.feature_selection import SelectKBest, VarianceThreshold
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.svm import SVC, LinearSVC
 from sklearn.decomposition import PCA
 from sklearn.pipeline import make_pipeline
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import (
+    classification_report,
+    confusion_matrix,
+    balanced_accuracy_score,
+    f1_score,
+    make_scorer,
+    accuracy_score,
+    precision_score,
+    recall_score,
+)
 from sklearn.model_selection import (
     LeaveOneOut,
+    StratifiedKFold,
     cross_val_score,
     cross_val_predict,
     train_test_split,
+    cross_validate,
     GridSearchCV,
 )
+from joblib import Parallel, delayed
 import numpy as np
 import pandas as pd
+from collections import defaultdict
 
 from .custom_transformers import PSSMSelector
 
@@ -86,6 +99,7 @@ def optimize_hyperparams(
     select_k_steps=1,
     max_k_to_select: int = None,
     cross_val_method: str = "5fold",
+    n_jobs: int = -1,
 ):
     pipe_list = list()
     param_grid = dict()
@@ -157,7 +171,7 @@ def optimize_hyperparams(
         param_grid=param_grid,
         cv=__get_cv_method(cross_val_method),
         scoring="f1_macro",
-        n_jobs=-1,
+        n_jobs=n_jobs,
         return_train_score=True,
         refit=True,
     )
@@ -183,10 +197,12 @@ def get_confusion_matrix(X_test, y_test, clf, labels: pd.Series = None):
     return df_confusion_matrix
 
 
-def get_classification_report(X_test, y_test, clf, labels: pd.Series = None):
+def get_classification_report(
+    X_test, y_test, clf, labels: pd.Series = None, add_balanced_accuracy: bool = False
+):
     y_pred = clf.predict(X_test)
 
-    report_dict = classification_report(y_true=y_test, y_pred=y_pred, output_dict=True)
+    report_dict = classification_report(y_true=y_test, y_pred=y_pred, output_dict=True,)
 
     df_report = pd.DataFrame.from_dict(report_dict).T
     df_report = df_report.astype({"support": "int"})
@@ -194,7 +210,7 @@ def get_classification_report(X_test, y_test, clf, labels: pd.Series = None):
     df_report = df_report.drop("accuracy")
 
     if labels is not None:
-        # Since numerical labels are assigned alphabetically
+        # Since numerical labels are assigned alphabetically by __encode_labels
         labels_unique = labels.unique()
         labels_unique = np.sort(labels_unique)
         labels_unique_dict = {
@@ -202,7 +218,68 @@ def get_classification_report(X_test, y_test, clf, labels: pd.Series = None):
         }
         df_report = df_report.rename(index=labels_unique_dict)
 
+    if add_balanced_accuracy:
+        balanced_accuracy = balanced_accuracy_score(y_true=y_test, y_pred=y_pred).round(
+            3
+        )
+        # Accuracy is calculated on all samples in the dataset
+        support = len(y_test)
+        df_report.loc["balanced accuracy"] = ["", "", balanced_accuracy, support]
+
     return df_report
+
+
+def get_cv_scores(X: np.array, y: np.array, clf, labels: np.array = None, cv: int = 5):
+    metrics = {
+        "acc": make_scorer(accuracy_score),
+        "acc_bal": make_scorer(balanced_accuracy_score),
+        "f1_macro": make_scorer(f1_score, average="macro"),
+        "precision_macro": make_scorer(precision_score, average="macro"),
+        "recall_macro": make_scorer(recall_score, average="macro"),
+    }
+    label_names = sorted(set(y))
+    label_names_enc = sorted(set(y))
+    if labels is not None:
+        label_names = list(np.sort(np.unique(labels)))
+
+    for label_name, label_name_enc in zip(label_names, label_names_enc):
+        metrics.update(
+            {
+                f"f1_{label_name}": make_scorer(f1_score, pos_label=label_name_enc),
+                f"precision_{label_name}": make_scorer(
+                    precision_score, pos_label=label_name_enc
+                ),
+                f"recall_{label_name}": make_scorer(
+                    recall_score, pos_label=label_name_enc
+                ),
+            }
+        )
+
+    cv_results = cross_validate(
+        clf, X, y, scoring=metrics, n_jobs=-1, cv=cv, return_train_score=True
+    )
+
+    accuracies_individual = defaultdict(list)
+    for train_index, test_index in StratifiedKFold(cv).split(X, y):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        clf.fit(X_train,y_train)
+        y_pred = clf.predict(X_test)
+        c_matrix = confusion_matrix(y_test,y_pred)
+        accuracies = c_matrix.diagonal() / c_matrix.sum(axis=1)
+        for label_name, acc in zip(label_names, accuracies):
+            accuracies_individual[f"test_acc_{label_name}"].append(acc)
+
+    cv_results.update(accuracies_individual)
+
+    cv_df = pd.DataFrame.from_dict(cv_results).transpose()
+    cv_df.columns = list(range(1, cv + 1))
+    avg = cv_df.mean(axis=1)
+    sdev = cv_df.std(axis=1)
+    cv_df["avg"] = avg
+    cv_df["sdev"] = sdev
+    cv_df = cv_df.round(3)
+    return cv_df.sort_index()
 
 
 def quick_test(df_features, labels: pd.Series):
@@ -217,13 +294,80 @@ def quick_test(df_features, labels: pd.Series):
     print("Kbest", gsearch.best_score_.round(3))
 
 
+# kwargs are passed to gridsearch in inner loop
+def nested_loocv(
+    df_features: pd.DataFrame,
+    labels: pd.Series,
+    verbose: bool = False,
+    decimal_places: int = 3,
+    n_jobs_outer_loop: int = -1,
+    n_jobs_inner_loop: int = 1,
+    **kwargs,
+):
+    X, y, feature_names, sample_names = preprocess_pandas(
+        df_features, labels, return_names=True
+    )
+
+    def outer_loop(
+        X: np.ndarray,
+        y: np.ndarray,
+        feature_names: np.ndarray,
+        train_index: np.ndarray,
+        test_index: np.ndarray,
+    ):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+
+        # inner loop
+        gsearch = optimize_hyperparams(
+            X_train,
+            y_train,
+            verbose=verbose,
+            feature_names=feature_names,
+            cross_val_method="LOOCV",
+            n_jobs=n_jobs_inner_loop,
+            **kwargs,
+        )
+        best_estimator = gsearch.best_estimator_
+
+        train_score = gsearch.best_score_
+
+        y_pred = best_estimator.predict(X_test)
+
+        # y_pred and y_test are both numpy arrays, this does not work for multi-label clf!
+        return [train_score, y_pred[0], y_test[0]]
+
+    splits = [
+        (train_index, test_index) for train_index, test_index in LeaveOneOut().split(X)
+    ]
+
+    # setting all numpy arrays to read-only, to avoid race conditions
+    results = Parallel(n_jobs=n_jobs_outer_loop, mmap_mode="r")(
+        delayed(outer_loop)(X, y, feature_names, train_index, test_index)
+        for train_index, test_index in splits
+    )
+
+    df_results = pd.DataFrame.from_records(
+        results, columns=["train_scores", "y_pred", "y_true"]
+    )
+
+    df_results_mean = pd.DataFrame(columns=["train", "test"])
+    f1_train = np.mean(df_results.train_scores)
+    f1_test = f1_score(
+        y_true=df_results.y_true, y_pred=df_results.y_pred, average="macro"
+    )
+    df_results_mean.loc["F1 (macro)"] = [f1_train, f1_test]
+
+    return df_results_mean.round(decimal_places)
+
+
 # kwargs are passed to hyperparam optimization
 def full_test(
     df_features: pd.DataFrame,
     labels: pd.Series,
     repetitions: int = 10,
     cross_val_method: str = "5fold",
-    verbose:bool = False,
+    verbose: bool = False,
     **kwargs,
 ):
     X, y, feature_names, sample_names = preprocess_pandas(

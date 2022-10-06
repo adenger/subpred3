@@ -2,7 +2,11 @@
 
 # Make sure that conda env is activated, and screen session is started.
 
-files=(meta_*evaluation*)
+
+# human=(human_*evaluation*)
+# yeast=(yeast_*evaluation*)
+# files=("${human[@]}" "${human[@]}")
+files=(yeast_*evaluation*)
 
 for file in "${files[@]}"; do
     # echo "$file"

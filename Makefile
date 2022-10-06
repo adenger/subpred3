@@ -45,6 +45,13 @@ raw_data:
 # Link for old API
 #	curl "https://www.uniprot.org/uniprot/?query=reviewed:yes&format=tab&columns=id,genes,protein%20names,organism,organism-id,keyword-id,keywords,go-id,go,database(TCDB),existence,sequence,fragment&sort=score" > data/raw/swissprot/sp_data.tsv
 
+## Extract raw data
+raw_data_manuscript: data_full.tar
+	tar xvf data_full.tar
+	mkdir data/intermediate/blast
+	tar xf data/intermediate/blast.tar.xz --directory=data/intermediate/blast
+	rm data/intermediate/blast.tar.xz
+
 #################################################################################
 # Raw data: BLAST                           		                            #
 #################################################################################
