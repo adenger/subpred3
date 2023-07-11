@@ -41,7 +41,7 @@ conda activate subpred
 ```
 pip install -e .
 ```
-5. Download data_full.tar from https://cloud.hiz-saarland.de/s/sGTyGApAqdgAQiB and place it in repository
+5. Download data_full.tar from [https://cloud.hiz-saarland.de/s/sGTyGApAqdgAQiB](https://cloud.hiz-saarland.de/s/8sjiefKp9eWJYps) and place it in repository
 6. Rename existing data folder:
 ```
 mv data data_bak
